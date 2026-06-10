@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCT SB V1 UI</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="../_vct_core/lib/idb/idb.min.js"></script>
+  <script src="../_vct_core/js/vct_one_core.js"></script>
+  <script src="../_vct_core/js/vct_idb_core.js"></script>
+  <script src="../_vct_core/js/vct_idb_common.js"></script>
+  <script src="../_vct_core/js/vct_idb.js"></script>
+  <script src="../VCT_SB_V1/config.js"></script>
+</head>
+<body>
+  <div id="sidebar">
+    <h1>VCT SB V1 UI</h1>
+    <p>VCT_Core が形成した支援データを確認する管理ビューです。</p>
+    <button id="nav-supports" class="nav-btn active" onclick="loadSupportsView()">支援履歴 (Supports)</button>
+    <button id="nav-users" class="nav-btn" onclick="loadUsersView()">ユーザー一覧 (Users)</button>
+    <button id="nav-ranking" class="nav-btn" onclick="loadRankingView()">ランキング (Ranking)</button>
+    <button id="nav-settings" class="nav-btn" onclick="loadSettingsView()">設定 (Settings)</button>
+    <button id="nav-state" class="nav-btn" onclick="showStateViewPlaceholder()">内部状態 (State)</button>
+    <div class="sidebar-section">
+      <h2>データ管理</h2>
+      <div class="sidebar-actions">
+        <button class="btn-danger" type="button" onclick="handleClearCurrentStream()">このStreamを削除</button>
+        <button class="btn-danger" type="button" onclick="handleClearAllSupports()">supports を全削除</button>
+        <button class="btn-danger" type="button" onclick="handleClearAllUsers()">users を全削除</button>
+      </div>
+    </div>
+    <div class="sidebar-note">
+      `VCT_Core` と同じ `vct_common_data` DB を参照します。<br>
+      ライブラリ未読込時はダッシュボード上に原因を表示します。
+    </div>
+  </div>
+
+  <div id="main-content">
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <div id="search-name-field" class="field">
+          <label for="search-name-input">ユーザー名</label>
+          
+          <input id="search-name-input" type="text" placeholder="部分一致で検索">
+        </div>
+        <div id="search-userkey-field" class="field">
+          <label for="search-userkey-input">userKey</label>
+          <input id="search-userkey-input" type="text" placeholder="完全一致" >
+        </div>
+        <div id="stream-id-field" class="field">
+          <label id="filter-label" for="stream-id-input">
+            streamId
+            <span
+              class="field-help"
+              tabindex="0"
+              aria-label="日付範囲と併用した場合は、両方の条件に一致する履歴だけ表示します。"
+              data-tooltip="日付範囲と併用した場合は、両方の条件に一致する履歴だけ表示します。"
+            >?</span>
+          </label>
+          <div class="field-inline">
+            <input id="stream-id-input" type="text" placeholder="未入力なら全件">
+            <button id="today-stream-button" class="secondary btn-inline-action" type="button" onclick="useTodayStream()">今日の streamId</button>
+            <button class="ghost btn-inline-clear" type="button" onclick="clearStreamIdFilter()">clear</button>
+          </div>
+        </div>
+        <div id="order-field" class="field">
+          <label for="order-select">並び順</label>
+          <select id="order-select">
+            <option value="desc">新しい順</option>
+            <option value="asc">古い順</option>
+          </select>
+        </div>
+        <div id="ranking-preset-field" class="field is-hidden">
+          <label for="ranking-preset-select">ランキング表示</label>
+          <select id="ranking-preset-select">
+            <option value="support_count">支援回数ランキング</option>
+            <option value="sponsorgift">メンギフ件数ランキング</option>
+            <option value="recent">最新支援者順</option>
+            <option value="name">ユーザー名順</option>
+            <option value="primary_currency">主要通貨金額ランキング</option>
+          </select>
+        </div>
+        <div id="ranking-currency-field" class="field is-hidden">
+          <label for="ranking-currency-select">主要通貨</label>
+          <select id="ranking-currency-select">
+            <option value="">選択してください</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar-row">
+        <div id="platform-field" class="field">
+          <label for="search-platform-select">platform</label>
+          <select id="search-platform-select">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div id="date-from-field" class="field">
+          <label for="date-from-input">日付 from</label>
+          <input id="date-from-input" type="date">
+        </div>
+        <div id="date-to-field" class="field">
+          <label for="date-to-input">日付 to</label>
+          <input id="date-to-input" type="date">
+        </div>
+        <div id="amount-min-field" class="field">
+          <label for="amount-min-input">金額 min</label>
+          <input id="amount-min-input" type="number" min="0" step="1" placeholder="0">
+        </div>
+        <div id="amount-max-field" class="field">
+          <label for="amount-max-input">金額 max</label>
+          <input id="amount-max-input" type="number" min="0" step="1" placeholder="上限なし">
+        </div>
+        <button id="search-button" onclick="reloadActiveView()">検索</button>
+        <button class="secondary" onclick="resetFilters()">リセット</button>
+        <button class="ghost" id="reload-button" onclick="reloadActiveView()">再読み込み</button>
+      </div>
+    </div>
+
+    <div id="status-bar">初期化待機中...</div>
+
+    <div class="summary-container">
+      <div class="summary-card">
+        <h3 id="summary-total-label">表示中の支援総額</h3>
+        <div class="value" id="summary-total">¥0</div>
+      </div>
+      <div class="summary-card">
+        <h3 id="summary-count-label">表示中の支援件数</h3>
+        <div class="value" id="summary-count">0 件</div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th id="table-head-col-1">時刻</th>
+            <th id="table-head-col-2">PF</th>
+            <th id="table-head-col-3">ユーザー名</th>
+            <th id="table-head-col-4">金額/量</th>
+            <th id="table-head-col-5">メッセージ</th>
+            <th id="table-head-col-6">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div id="settings-panel" class="settings-panel is-hidden"></div>
+  </div>
+
+  <div id="detail-overlay" class="detail-overlay" aria-hidden="true">
+    <div class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div class="detail-head">
+        <div>
+          <h2 id="detail-title">詳細</h2>
+          <p id="detail-subtitle">選択したデータの詳細</p>
+        </div>
+        <button class="detail-close" type="button" onclick="closeDetailPanel()">閉じる</button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-meta">
+          <h3>Summary</h3>
+          <div id="detail-meta-list" class="detail-meta-list"></div>
+        </div>
+        <div class="detail-json">
+          <h3>JSON</h3>
+          <div id="detail-rich-content"></div>
+          <pre id="detail-json-content">{}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="danger-overlay" class="detail-overlay" aria-hidden="true">
+    <div class="danger-panel" role="dialog" aria-modal="true" aria-labelledby="danger-title">
+      <div class="detail-head">
+        <div>
+          <h2 id="danger-title">危険な操作</h2>
+          <p id="danger-subtitle">この操作は元に戻せません。</p>
+        </div>
+        <button class="detail-close" type="button" onclick="closeDangerPanel()">閉じる</button>
+      </div>
+      <div class="danger-body">
+        <div class="danger-section">
+          <p id="danger-message" class="inline-note">削除対象を確認してください。</p>
+          <label class="settings-toggle settings-toggle--warning danger-unlock">
+            <input id="danger-unlock" type="checkbox">
+            内容を確認し、削除を実行できるようにする
+          </label>
+        </div>
+        <div class="danger-actions">
+          <button class="secondary" type="button" onclick="closeDangerPanel()">キャンセル</button>
+          <button id="danger-confirm-button" class="danger" type="button" disabled>削除を実行</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./dashboard-ui.js"></script>
+  <script src="./dashboard-data.js"></script>
+  <script>
+    initDashboard();
+  </script>
+</body>
+</html>

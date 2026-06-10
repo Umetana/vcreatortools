@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body hidden>
+  <div id="container" class="container">
+    <div class="poll-panel" aria-label="poll">
+      <!-- 操作パネル（独立したカード） -->
+      <div class="poll-ops">
+        <div class="poll-meta">
+          <div class="poll-meta-title">Ms.Tally v0.6.0</div>
+          <div class="poll-meta-sub">わんコメ ver</div>
+        </div>
+
+        <label class="poll-title-input">
+          表示タイトル
+          <input type="text" v-model.trim="poll.title" maxlength="40" placeholder="好きなお菓子は？" />
+        </label>
+
+        <div class="poll-ops-row">
+          <button type="button" class="poll-btn" @click="startPoll" :disabled="poll.isRunning">Start</button>
+          <button type="button" class="poll-btn" @click="stopPoll" :disabled="!poll.isRunning">Stop</button>
+          <button type="button" class="poll-btn" @click="resetPoll">Reset</button>
+
+          <label class="poll-unique">
+            <input type="checkbox" v-model="poll.uniquePerUser" />
+            1人1票
+          </label>
+
+          <label class="poll-save">
+            <input type="checkbox" v-model="poll.autoSave" />
+            設定を保存する
+          </label>
+
+          <label class="poll-max" v-if="poll.mode === 'number'">
+            1〜
+            <input type="number" v-model.number="poll.maxChoice" min="1" max="99" step="1" />
+            （最大99）
+          </label>
+
+          <label class="poll-inline" v-if="poll.mode === 'text'">
+            最大
+            <input type="number" v-model.number="poll.textMaxLen" min="1" max="50" step="1" />
+            文字
+          </label>
+        </div>
+
+        <div class="poll-ops-row">
+          <div class="poll-group">
+            <div class="poll-group-title">集計モード</div>
+            <label class="poll-radio">
+              <input type="radio" value="number" v-model="poll.mode" />
+              数字
+            </label>
+            <label class="poll-radio">
+              <input type="radio" value="text" v-model="poll.mode" />
+              テキスト
+            </label>
+          </div>
+
+          <div class="poll-group">
+            <div class="poll-group-title">結果表示</div>
+            <label class="poll-radio">
+              <input type="radio" value="realtime" v-model="poll.displayMode" />
+              リアルタイム
+            </label>
+            <label class="poll-radio">
+              <input type="radio" value="onStop" v-model="poll.displayMode" />
+              Stopで表示
+            </label>
+          </div>
+
+          <div class="poll-group">
+            <div class="poll-group-title">表示形式</div>
+            <label class="poll-radio">
+              <input type="radio" value="ranking" v-model="poll.viewType" />
+              ランキング
+            </label>
+            <label class="poll-radio">
+              <input type="radio" value="barList" v-model="poll.viewType" />
+              個別バー
+            </label>
+            <label class="poll-radio">
+              <input type="radio" value="stackedBar" v-model="poll.viewType" />
+              割合バー
+            </label>
+          </div>
+
+          <div class="poll-group">
+            <div class="poll-group-title">表示数</div>
+            <label class="poll-inline">
+              上位
+              <input type="number" v-model.number="poll.showLimit" min="1" max="99" step="1" />
+              位まで
+            </label>
+          </div>
+        </div>
+
+        <div class="poll-ops-row">
+          <div class="poll-group" v-if="poll.viewType !== 'ranking'">
+            <div class="poll-group-title">グラフ表示数</div>
+            <label class="poll-inline">
+              上位
+              <input type="number" v-model.number="poll.chartTopLimit" min="1" max="10" step="1" />
+              件 + その他
+            </label>
+          </div>
+
+          <label class="poll-save" v-if="poll.viewType === 'stackedBar'">
+            <input type="checkbox" v-model="poll.stackedIncludeOthers" />
+            その他を割合バーに含める
+          </label>
+
+          <div class="poll-group">
+            <div class="poll-group-title">強調</div>
+            <label class="poll-radio">
+              <input type="radio" :value="3" v-model.number="poll.topN" />
+              上位3
+            </label>
+            <label class="poll-radio">
+              <input type="radio" :value="5" v-model.number="poll.topN" />
+              上位5
+            </label>
+          </div>
+        </div>
+
+        <div class="poll-ops-row">
+          <div class="poll-group poll-color-group">
+            <div class="poll-group-title">パネル色</div>
+            <div class="poll-color">
+              <label>R <input type="number" v-model.number="poll.bg.r" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.bg.r" min="0" max="255" step="1" />
+              <label>G <input type="number" v-model.number="poll.bg.g" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.bg.g" min="0" max="255" step="1" />
+              <label>B <input type="number" v-model.number="poll.bg.b" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.bg.b" min="0" max="255" step="1" />
+              <label>A <input type="number" v-model.number="poll.bg.a" min="0" max="1" step="0.05" /></label>
+              <input class="poll-alpha-range" type="range" v-model.number="poll.bg.a" min="0" max="1" step="0.05" />
+            </div>
+          </div>
+
+          <div class="poll-group poll-color-group">
+            <div class="poll-group-title">文字色</div>
+            <div class="poll-color">
+              <label>R <input type="number" v-model.number="poll.fg.r" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.fg.r" min="0" max="255" step="1" />
+              <label>G <input type="number" v-model.number="poll.fg.g" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.fg.g" min="0" max="255" step="1" />
+              <label>B <input type="number" v-model.number="poll.fg.b" min="0" max="255" step="1" /></label>
+              <input class="poll-color-range" type="range" v-model.number="poll.fg.b" min="0" max="255" step="1" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 間を空ける（クロップ用スペース） -->
+      <div class="poll-gap"></div>
+
+      <!-- 表示エリア（独立したカード） -->
+      <div class="poll-view" :style="pollPanelStyle">
+        <!-- 情報ヘッダ -->
+        <div class="poll-info">
+          <div class="poll-header">
+            <div class="poll-title">{{pollTitle}}</div>
+            <div class="poll-status">
+              <span class="pill" :data-running="poll.isRunning">
+                <span v-if="poll.isRunning">受付中</span>
+                <span v-else>停止中</span>
+              </span>
+              <span class="poll-total">合計: {{pollTotal}}票</span>
+            </div>
+          </div>
+
+          <div class="poll-hint" v-html="pollHint"></div>
+        </div>
+
+        <!-- 集計表示 -->
+        <div class="poll-results">
+          <div v-if="!pollHasRows" class="poll-empty">
+            <span v-if="poll.isRunning && poll.displayMode === 'onStop'">集計中（Stopで結果表示）</span>
+            <span v-else>票がまだありません</span>
+          </div>
+
+          <template v-if="poll.viewType === 'ranking'">
+            <div v-for="(row, idx) in pollDisplayRows" :key="row.choice + ':' + idx" class="poll-row"
+              :class="{ 'is-top': idx < poll.topN && !row.isOther, 'is-small': idx >= poll.topN || row.isOther, 'is-winner': !poll.isRunning && idx === 0, 'is-other': row.isOther }">
+              <div class="poll-rank">{{row.isOther ? '-' : idx + 1}}</div>
+              <div class="poll-choice">{{row.choice}}</div>
+              <div class="poll-count">{{row.count}}票</div>
+            </div>
+          </template>
+
+          <template v-else-if="poll.viewType === 'barList'">
+            <div v-for="(row, idx) in pollChartRows" :key="row.choice" class="poll-bar-row">
+              <div class="poll-bar-meta">
+                <div class="poll-choice">{{row.choice}}</div>
+                <div class="poll-bar-value">{{row.count}}票 / {{row.percentText}}</div>
+              </div>
+              <div class="poll-bar-track">
+                <div class="poll-bar-fill" :style="{ width: row.percent + '%', backgroundColor: row.color }"></div>
+              </div>
+            </div>
+          </template>
+
+          <div v-else-if="poll.viewType === 'stackedBar'" class="poll-stacked-wrap">
+            <div class="poll-stacked-bar">
+              <div v-for="row in pollStackedRows" :key="row.choice" class="poll-stacked-segment"
+                :style="{ width: row.segmentPercent + '%', backgroundColor: row.color }"
+                :title="row.choice + ' ' + row.count + '票 / 全体 ' + row.globalPercentText">
+                <span v-if="row.segmentPercent >= 8">{{row.choice}} {{row.count}}票</span>
+              </div>
+            </div>
+            <div class="poll-stacked-legend">
+              <div v-for="row in pollStackedLegendRows" :key="row.choice" class="poll-legend-item">
+                <span class="poll-legend-dot" :style="{ backgroundColor: row.color }"></span>
+                <span class="poll-legend-label">{{row.choice}}</span>
+                <span class="poll-legend-value">{{row.count}}票 / {{row.globalPercentText}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- comments hidden for poll-only mode -->
+  </div>
+  <script src="../__origin/js/vue3.min.js"></script>
+  <script src="../__origin/js/onesdk.js"></script>
+  <script src="./script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VCT InfoHUD V1</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <main class="stage" id="stage">
+    <section class="settings-panel" aria-label="VCT InfoHUD settings">
+      <div class="settings-panel__header">
+        <div>
+          <h1>VCT InfoHUD V1</h1>
+          <p>OBSでは下部HUDだけが映るようにクロップして使用します。</p>
+        </div>
+        <div class="status-stack">
+          <div class="status-pill" id="connectionStatus">わんコメ未接続</div>
+          <div class="notice-pill" id="noticeStatus" hidden></div>
+        </div>
+      </div>
+
+      <nav class="settings-tabs" aria-label="設定カテゴリ">
+        <button type="button" class="settings-tab is-active" data-tab="basic">基本</button>
+        <button type="button" class="settings-tab" data-tab="metric">数値</button>
+        <button type="button" class="settings-tab" data-tab="log">ログ</button>
+        <button type="button" class="settings-tab" data-tab="visual">ビジュアル</button>
+        <button type="button" class="settings-tab" data-tab="font">文字</button>
+        <button type="button" class="settings-tab" data-tab="info">情報文</button>
+      </nav>
+
+      <div class="settings-pages">
+        <div class="settings-page is-active" data-page="basic">
+          <div class="settings-grid">
+            <fieldset class="setting-box">
+              <legend>設定の読み込み元</legend>
+              <label><input type="radio" name="loadSource" value="auto"> 自動</label>
+              <label><input type="radio" name="loadSource" value="localStorage"> 保存済み設定</label>
+              <label><input type="radio" name="loadSource" value="configJs"> config.js</label>
+              <label><input type="radio" name="loadSource" value="builtin"> 初期設定</label>
+              <button type="button" id="saveLoadSource">読込元設定を保存</button>
+            </fieldset>
+
+            <fieldset class="setting-box">
+              <legend>レイアウト</legend>
+              <div class="radio-stack">
+                <span>メタエリア</span>
+                <label><input type="radio" name="metricLayout" value="default"> 標準</label>
+                <label><input type="radio" name="metricLayout" value="compactMeta"> 上部空きスロット</label>
+                <label><input type="radio" name="metricLayout" value="gridMeta"> 2x2スロット</label>
+              </div>
+              <label>HUD高さ <input id="hudHeight" type="number" min="180" max="360" step="10"> px</label>
+              <label>同接エリア幅 <input id="viewersWidth" type="number" min="120" max="320" step="10"> px</label>
+              <label>高評価エリア幅 <input id="likesWidth" type="number" min="120" max="320" step="10"> px</label>
+              <label>情報エリア幅 <input id="infoWidth" type="number" min="260" max="520" step="10"> px</label>
+            </fieldset>
+
+          </div>
+        </div>
+
+        <div class="settings-page" data-page="metric">
+          <div class="settings-grid settings-grid--metric">
+            <fieldset class="setting-box">
+              <legend>同接・高評価</legend>
+              <div class="radio-stack radio-stack--inline">
+                <span>数値</span>
+                <label><input type="radio" name="metricSource" value="auto"> 自動</label>
+                <label><input type="radio" name="metricSource" value="manual"> 手動</label>
+                <label><input type="radio" name="metricSource" value="meta"> meta</label>
+              </div>
+              <label>同接 <input id="viewersValue" type="text" maxlength="12"></label>
+              <label>高評価 <input id="likesValue" type="text" maxlength="12"></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="settings-page" data-page="log">
+          <div class="settings-grid settings-grid--log">
+            <fieldset class="setting-box">
+              <legend>ログ表示</legend>
+              <div class="radio-stack">
+                <span>支援金額</span>
+                <label><input type="radio" name="supportAmountDisplay" value="badge"> バッジ</label>
+                <label><input type="radio" name="supportAmountDisplay" value="before"> 本文前</label>
+                <label><input type="radio" name="supportAmountDisplay" value="after"> 本文後</label>
+                <label><input type="radio" name="supportAmountDisplay" value="none"> 表示しない</label>
+              </div>
+              <label>コメント上限文字数 <input id="maxCommentChars" type="number" min="12" max="120" step="2"></label>
+              <label>ログ行高さ <input id="logLineHeight" type="number" min="24" max="72" step="1"> px</label>
+              <label>ログ行間 <input id="logRowGap" type="number" min="0" max="16" step="1"> px</label>
+            </fieldset>
+
+            <fieldset class="setting-box">
+              <legend>絵文字・スタンプ</legend>
+              <label>画像絵文字 <input id="showImageEmoji" type="checkbox"></label>
+              <label>スタンプ <input id="showStickers" type="checkbox"></label>
+              <label>絵文字倍率 <input id="emojiSizeRatio" type="number" min="0.6" max="2" step="0.05"></label>
+              <label>スタンプ倍率 <input id="stickerSizeRatio" type="number" min="0.6" max="2.4" step="0.05"></label>
+            </fieldset>
+
+            <fieldset class="setting-box">
+              <legend>イベント本文</legend>
+              <label>イベント本文 <input id="showEventMessages" type="checkbox"></label>
+              <label>スーパーチャット <input id="showEventMessageSuperchat" type="checkbox"></label>
+              <label>スーパーステッカー <input id="showEventMessageSupersticker" type="checkbox"></label>
+              <label>メンバーシップ継続 <input id="showEventMessageMembershipComment" type="checkbox"></label>
+              <label>メンバーシップ加入 <input id="showEventMessageMemberJoin" type="checkbox"></label>
+              <label>メンギフ送信 <input id="showEventMessageMembershipGift" type="checkbox"></label>
+              <label>メンギフ受取 <input id="showEventMessageGiftReceived" type="checkbox"></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="settings-page" data-page="visual">
+          <div class="settings-grid settings-grid--visual">
+            <fieldset class="setting-box setting-box--visual">
+              <legend>バー本体</legend>
+              <label>背景方式
+                <select id="hudBgMode">
+                  <option value="solid">単色</option>
+                  <option value="gradient">2色グラデ</option>
+                </select>
+              </label>
+              <label>本体色 <input id="hudBgColor" type="color"></label>
+              <label>本体色HEX <input id="hudBgHex" type="text" maxlength="7"></label>
+              <label>本体色2 <input id="hudBgColor2" type="color"></label>
+              <label>本体色HEX2 <input id="hudBgHex2" type="text" maxlength="7"></label>
+              <label>グラデ角度 <input id="hudBgGradientAngle" type="number" min="0" max="360" step="5"> deg</label>
+              <label>本体透明度 <input id="hudBgAlpha" type="range" min="0" max="100" step="1"></label>
+              <label>本体透明度数値 <input id="hudBgAlphaNum" type="number" min="0" max="100" step="1"> %</label>
+            </fieldset>
+
+            <fieldset class="setting-box setting-box--visual">
+              <legend>パネル</legend>
+              <label>パネル色 <input id="panelBgColor" type="color"></label>
+              <label>パネル色HEX <input id="panelBgHex" type="text" maxlength="7"></label>
+              <label>パネル透明度 <input id="panelBgAlpha" type="range" min="0" max="100" step="1"></label>
+              <label>パネル透明度数値 <input id="panelBgAlphaNum" type="number" min="0" max="100" step="1"> %</label>
+            </fieldset>
+
+            <fieldset class="setting-box setting-box--visual">
+              <legend>枠線</legend>
+              <label>枠線色 <input id="panelBorderColor" type="color"></label>
+              <label>枠線色HEX <input id="panelBorderHex" type="text" maxlength="7"></label>
+              <label>枠線透明度 <input id="panelBorderAlpha" type="range" min="0" max="100" step="1"></label>
+              <label>枠線透明度数値 <input id="panelBorderAlphaNum" type="number" min="0" max="100" step="1"> %</label>
+              <label>枠線太さ <input id="panelBorderWidth" type="number" min="0" max="8" step="1"> px</label>
+              <label>角丸 <input id="panelRadius" type="number" min="0" max="30" step="1"> px</label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="settings-page" data-page="font">
+          <div class="settings-grid settings-grid--font">
+            <fieldset class="setting-box setting-box--font">
+              <legend>フォント</legend>
+              <div class="radio-stack">
+                <label><input type="radio" name="fontPreset" value="gothic"> ゴシック標準</label>
+                <label><input type="radio" name="fontPreset" value="rounded"> 丸ゴシック</label>
+                <label><input type="radio" name="fontPreset" value="mincho"> 明朝</label>
+                <label><input type="radio" name="fontPreset" value="mono"> 等幅</label>
+                <label><input type="radio" name="fontPreset" value="system"> システム標準</label>
+              </div>
+            </fieldset>
+
+            <fieldset class="setting-box setting-box--font">
+              <legend>文字サイズ</legend>
+              <label>コメント文字 <input id="commentFontSize" type="number" min="14" max="48" step="1"> px</label>
+              <label>情報文字 <input id="infoFontSize" type="number" min="16" max="54" step="1"> px</label>
+              <label>数値文字 <input id="metricFontSize" type="number" min="24" max="80" step="1"> px</label>
+            </fieldset>
+
+            <fieldset class="setting-box setting-box--font">
+              <legend>文字色</legend>
+              <label>メタ項目名 <input id="metricLabelColor" type="color"></label>
+              <label>メタ項目名HEX <input id="metricLabelHex" type="text" maxlength="7"></label>
+              <label>メタ数値 <input id="metricValueColor" type="color"></label>
+              <label>メタ数値HEX <input id="metricValueHex" type="text" maxlength="7"></label>
+              <label>ログ通常文字 <input id="logTextColor" type="color"></label>
+              <label>ログ通常文字HEX <input id="logTextHex" type="text" maxlength="7"></label>
+              <label>INFO文字 <input id="infoTextColor" type="color"></label>
+              <label>INFO文字HEX <input id="infoTextHex" type="text" maxlength="7"></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="settings-page" data-page="info">
+          <div class="settings-grid settings-grid--info">
+            <fieldset class="setting-box">
+              <legend>情報設定</legend>
+              <label>情報切替間隔 <input id="infoIntervalSec" type="number" min="3" max="120" step="1"> 秒</label>
+              <label>ギフトカード <input id="giftCardEnabled" type="checkbox"></label>
+              <label>ギフトカード表示時間 <input id="giftCardDurationSec" type="number" min="3" max="30" step="1"> 秒</label>
+              <label>種別ラベル <input id="giftCardShowLabel" type="checkbox"></label>
+              <label>ユーザー名 <input id="giftCardShowUser" type="checkbox"></label>
+              <label>本文 <input id="giftCardShowMessage" type="checkbox"></label>
+              <label>画像 <input id="giftCardShowImage" type="checkbox"></label>
+              <label>画像あり時も本文 <input id="giftCardShowMessageWithImage" type="checkbox"></label>
+            </fieldset>
+
+            <fieldset class="setting-box setting-box--wide setting-box--info-text">
+              <legend>情報ウインドウ文言</legend>
+              <textarea id="infoMessages" rows="6" spellcheck="false"></textarea>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row settings-actions">
+        <button type="button" id="saveConfig">現在の設定を保存</button>
+        <button type="button" id="resetConfig">初期値に戻す</button>
+        <button type="button" id="clearSavedConfig">保存済み設定を削除</button>
+        <button type="button" id="addSampleComment">テストコメント</button>
+      </div>
+    </section>
+
+    <div class="crop-guide">
+      <span>OBSクロップ目安：この線より下を使用</span>
+    </div>
+
+    <section class="hud" id="hud" aria-label="VCT InfoHUD">
+      <div class="hud__cell hud__meta-slot hud__meta-slot--wide" aria-hidden="true"></div>
+      <div class="hud__cell hud__meta-slot hud__meta-slot--left" aria-hidden="true"></div>
+      <div class="hud__cell hud__meta-slot hud__meta-slot--right" aria-hidden="true"></div>
+
+      <div class="hud__cell hud__metric" id="viewersPanel">
+        <div class="hud__label">同接</div>
+        <div class="hud__value" id="viewersDisplay">---</div>
+      </div>
+
+      <div class="hud__cell hud__metric" id="likesPanel">
+        <div class="hud__label">高評価</div>
+        <div class="hud__value" id="likesDisplay">---</div>
+      </div>
+
+      <div class="hud__cell hud__log">
+        <div class="hud__label">LOG</div>
+        <div class="log-list" id="logList" aria-live="polite"></div>
+      </div>
+
+      <div class="hud__cell hud__info">
+        <div class="hud__label">INFO</div>
+        <div class="info-message" id="infoMessage"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../__origin/js/onesdk.js"></script>
+  <script src="./config.js"></script>
+  <script src="./js/vct-loader.js"></script>
+</body>
+
+</html>

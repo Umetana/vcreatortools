@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTuberテロップ表示専用機 v1.0.6</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=Kaisei+Tokumin:wght@700&family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./css/vtelop-common.css">
+    <style>
+        body {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="obs-telop" class="telop-container hidden-telop">
+        <img id="obs-frame" class="telop-frame" alt="">
+        <div id="obs-text" class="telop-text"></div>
+    </div>
+    <div id="obs-gift-card" class="gift-card hidden">
+        <div id="obs-gift-header" class="gift-card-header">
+            <div id="obs-gift-label" class="gift-card-label"></div>
+            <div id="obs-gift-user" class="gift-card-user"></div>
+            <div id="obs-gift-amount" class="gift-card-amount"></div>
+        </div>
+        <div id="obs-gift-body" class="gift-card-body"></div>
+    </div>
+
+    <script>
+        const BC_NAME = 'vtuber_telop_channel';
+        const GIFT_RUNTIME_STORAGE_KEY = 'vt_telop_gift_runtime';
+        const GIFT_BASE_FRAME_WIDTH = 1920;
+        const GIFT_BASE_FRAME_HEIGHT = 300;
+        const bc = new BroadcastChannel(BC_NAME);
+
+        const FRAME_PRESETS = {
+            none: { src: null },
+            news: { src: 'frames/news.png' },
+            news2: { src: 'frames/news2.png' },
+            pop: { src: 'frames/pop.png' },
+            pop2: { src: 'frames/pop2.png' },
+            pop3: { src: 'frames/pop3.png' },
+        };
+
+        let state = {
+            presets: [
+                {
+                    data: [], config: {
+                        font: "'Noto Sans JP', sans-serif",
+                        color: '#ffffff',
+                        colorAlpha: 100,
+                        bgBase: '#000000',
+                        bgAlpha: 75,
+                        border: '#4f46e5',
+                        borderAlpha: 100,
+                        size: 36,
+                        posY: 90,
+                        posX: 50,
+                        framePreset: 'news',
+                        frameScale: 1.0,
+                        giftCardScale: 0.86,
+                        textOffsetX: 0,
+                        textOffsetY: 0,
+                        fullWidth: false,
+                        outlineColor: '#000000',
+                        outlineWidth: 0,
+                        outlineAlpha: 100
+                    }
+                },
+                {
+                    data: [], config: {
+                        font: "'Noto Sans JP', sans-serif",
+                        color: '#ffffff',
+                        colorAlpha: 100,
+                        bgBase: '#000000',
+                        bgAlpha: 75,
+                        border: '#4f46e5',
+                        borderAlpha: 100,
+                        size: 36,
+                        posY: 90,
+                        posX: 50,
+                        framePreset: 'news',
+                        frameScale: 1.0,
+                        giftCardScale: 0.86,
+                        textOffsetX: 0,
+                        textOffsetY: 0,
+                        fullWidth: false,
+                        outlineColor: '#000000',
+                        outlineWidth: 0,
+                        outlineAlpha: 100
+                    }
+                },
+                {
+                    data: [], config: {
+                        font: "'Noto Sans JP', sans-serif",
+                        color: '#ffffff',
+                        colorAlpha: 100,
+                        bgBase: '#000000',
+                        bgAlpha: 75,
+                        border: '#4f46e5',
+                        borderAlpha: 100,
+                        size: 36,
+                        posY: 90,
+                        posX: 50,
+                        framePreset: 'news',
+                        frameScale: 1.0,
+                        giftCardScale: 0.86,
+                        textOffsetX: 0,
+                        textOffsetY: 0,
+                        fullWidth: false,
+                        outlineColor: '#000000',
+                        outlineWidth: 0,
+                        outlineAlpha: 100
+                    }
+                }
+            ],
+            activeIndex: 0,
+            index: 0,
+            visible: true,
+            giftInterrupt: {
+                current: null,
+                expiresAt: 0
+            }
+        };
+
+        // Define convenience getters
+        Object.defineProperty(state, 'data', { get() { return this.presets[this.activeIndex].data; } });
+        Object.defineProperty(state, 'config', { get() { return this.presets[this.activeIndex].config; } });
+
+        function normalizePreset(preset = {}) {
+            return {
+                data: Array.isArray(preset.data) ? preset.data : [],
+                config: {
+                    ...state.presets[0].config,
+                    ...(preset.config || {})
+                }
+            };
+        }
+
+        function normalizePresets(presets) {
+            const normalized = Array.isArray(presets) ? presets.slice(0, 3).map(normalizePreset) : [];
+            while (normalized.length < 3) {
+                normalized.push(normalizePreset());
+            }
+            return normalized;
+        }
+
+        function init() {
+            const sPresets = localStorage.getItem('vt_telop_presets');
+            const sActiveIdx = localStorage.getItem('vt_telop_active_slot');
+            const sIdx = localStorage.getItem('vt_telop_index');
+            const sVis = localStorage.getItem('vt_telop_visible');
+            const sGiftRuntime = localStorage.getItem(GIFT_RUNTIME_STORAGE_KEY);
+
+            if (sPresets) {
+                state.presets = normalizePresets(JSON.parse(sPresets));
+            } else {
+                // Migration
+                const sData = localStorage.getItem('vt_telop_data');
+                const sCfg = localStorage.getItem('vt_telop_config');
+                if (sData) state.presets[0].data = JSON.parse(sData);
+                if (sCfg) state.presets[0].config = { ...state.presets[0].config, ...JSON.parse(sCfg) };
+            }
+
+            state.presets = normalizePresets(state.presets);
+
+            if (sActiveIdx) state.activeIndex = parseInt(sActiveIdx, 10);
+            if (sIdx) state.index = parseInt(sIdx, 10);
+            if (sVis) state.visible = JSON.parse(sVis);
+            if (sGiftRuntime) {
+                try {
+                    const runtime = JSON.parse(sGiftRuntime);
+                    const expiresAt = Number(runtime?.expiresAt || 0);
+                    if (runtime?.current && expiresAt && Date.now() < expiresAt) {
+                        state.giftInterrupt.current = runtime.current;
+                        state.giftInterrupt.expiresAt = expiresAt;
+                    } else {
+                        localStorage.removeItem(GIFT_RUNTIME_STORAGE_KEY);
+                    }
+                } catch {
+                    localStorage.removeItem(GIFT_RUNTIME_STORAGE_KEY);
+                }
+            }
+
+            applyConfig();
+            updateUI();
+        }
+
+        bc.onmessage = (event) => {
+            const msg = event.data;
+            switch (msg.type) {
+                case 'UPDATE_SLOT':
+                    state.presets[msg.payload.slotIndex] = normalizePreset({
+                        data: msg.payload.data,
+                        config: msg.payload.config
+                    });
+                    if (msg.payload.slotIndex === state.activeIndex) {
+                        applyConfig();
+                        updateUI();
+                    }
+                    break;
+                case 'SWITCH_ACTIVE_SLOT':
+                    state.activeIndex = msg.payload;
+                    state.index = 0;
+                    applyConfig();
+                    updateUI();
+                    break;
+                case 'UPDATE_DATA':
+                    state.presets[state.activeIndex].data = msg.payload;
+                    state.index = 0;
+                    updateUI();
+                    break;
+                case 'UPDATE_INDEX':
+                    state.index = msg.payload;
+                    updateUI();
+                    break;
+                case 'TOGGLE_VISIBILITY':
+                    state.visible = msg.payload;
+                    updateUI();
+                    break;
+                case 'LIVE_CONFIG':
+                    state.presets[state.activeIndex].config = {
+                        ...state.presets[state.activeIndex].config,
+                        ...msg.payload
+                    };
+                    applyConfig();
+                    break;
+                case 'GIFT_INTERRUPT_STATE':
+                    state.giftInterrupt.current = msg.payload?.current || null;
+                    state.giftInterrupt.expiresAt = Number(msg.payload?.expiresAt || 0);
+                    updateUI();
+                    break;
+            }
+        };
+
+        function hexToRgba(hex, alphaPercent) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alphaPercent / 100})`;
+        }
+
+        function applyConfig(scale = 1) {
+            const container = document.getElementById('obs-telop');
+            const textEl = document.getElementById('obs-text');
+            const frameEl = document.getElementById('obs-frame');
+            const cfg = state.config;
+
+            if (cfg.fullWidth) {
+                container.style.width = '100%';
+                container.style.left = '0%';
+                container.style.top = `${cfg.posY}%`;
+                container.style.transform = 'translateY(-50%)';
+
+                textEl.style.width = '100%';
+                textEl.style.borderRadius = '0px';
+                textEl.style.borderLeft = 'none';
+                textEl.style.borderRight = 'none';
+            } else {
+                container.style.width = '';
+                container.style.left = `${cfg.posX}%`;
+                container.style.top = `${cfg.posY}%`;
+                container.style.transform = 'translate(-50%, -50%)';
+
+                textEl.style.width = 'auto';
+                textEl.style.borderRadius = '8px';
+                textEl.style.borderLeft = '';
+                textEl.style.borderRight = '';
+            }
+
+            // テキスト基本
+            textEl.style.fontFamily = cfg.font;
+            textEl.style.color = hexToRgba(cfg.color, cfg.colorAlpha);
+            textEl.style.fontSize = `${cfg.size * scale}px`;
+            textEl.style.transform = `translate(${cfg.textOffsetX * scale}px, ${cfg.textOffsetY * scale}px)`;
+
+            if (cfg.font.includes('Noto Sans JP') || cfg.font.includes('Kaisei Tokumin')) {
+                textEl.style.fontWeight = '700';
+            } else {
+                textEl.style.fontWeight = 'normal';
+            }
+
+            // 背景と枠線
+            textEl.style.backgroundColor = hexToRgba(cfg.bgBase, cfg.bgAlpha);
+            textEl.style.borderColor = hexToRgba(cfg.border, cfg.borderAlpha);
+            textEl.style.borderWidth = (cfg.borderAlpha > 0) ? `${Math.max(1, Math.round(4 * scale))}px` : '0px';
+
+            // 文字縁取り (text-shadow)
+            if (cfg.outlineWidth > 0) {
+                const w = cfg.outlineWidth * scale;
+                const c = hexToRgba(cfg.outlineColor, cfg.outlineAlpha);
+                textEl.style.textShadow = `
+                    ${w}px ${w}px 0 ${c},
+                    -${w}px ${w}px 0 ${c},
+                    ${w}px -${w}px 0 ${c},
+                    -${w}px -${w}px 0 ${c},
+                    ${w}px 0px 0 ${c},
+                    -${w}px 0px 0 ${c},
+                    0px ${w}px 0 ${c},
+                    0px -${w}px 0 ${c}
+                `;
+            } else {
+                textEl.style.textShadow = 'none';
+            }
+
+            // フレーム画像
+            const preset = FRAME_PRESETS[cfg.framePreset] || FRAME_PRESETS.news;
+            if (frameEl && preset.src) {
+                frameEl.style.display = '';
+                frameEl.onerror = () => { frameEl.style.display = 'none'; };
+                frameEl.src = preset.src;
+                const baseW = 1920;
+                const targetPx = Math.round(baseW * cfg.frameScale * scale);
+                frameEl.style.width = `${targetPx}px`;
+            } else if (frameEl) {
+                frameEl.style.display = 'none';
+            }
+        }
+
+        function updateUI() {
+            const payload = getDisplayPayload();
+            applyDisplayMode(payload);
+        }
+
+        function formatGiftAmount(event) {
+            const amount = Number(event?.amount || 0);
+            if (amount <= 0) return '';
+            return event.currency ? `${amount.toLocaleString()} ${event.currency}` : amount.toLocaleString();
+        }
+
+        function getDisplayPayload() {
+            if (!state.visible) return { visible: false, text: '' };
+            if (state.giftInterrupt.current) {
+                return state.giftInterrupt.current;
+            }
+            const normalText = state.data[state.index] || '';
+            return {
+                mode: 'normal',
+                visible: !!normalText,
+                text: normalText
+            };
+        }
+
+        function getGiftCardMetrics() {
+            const cfg = state.config;
+            const frameScale = Number(cfg.frameScale || 1);
+            const giftCardScale = Number(cfg.giftCardScale || 0.86);
+            const baseWidth = GIFT_BASE_FRAME_WIDTH * frameScale;
+            const baseHeight = GIFT_BASE_FRAME_HEIGHT * frameScale;
+            return {
+                leftPercent: Number(cfg.posX || 50),
+                topPercent: Number(cfg.posY || 90),
+                widthPx: Math.min(baseWidth * giftCardScale, window.innerWidth * 0.95),
+                minHeightPx: Math.max(150, baseHeight * Math.max(0.72, giftCardScale * 0.95)),
+                paddingX: Math.max(28, Math.round(baseWidth * Math.max(0.014, giftCardScale * 0.02))),
+                paddingY: Math.max(22, Math.round(baseHeight * Math.max(0.07, giftCardScale * 0.09)))
+            };
+        }
+
+        function normalizeGiftBodyParts(payload) {
+            const parts = Array.isArray(payload?.bodyParts) ? payload.bodyParts : [];
+            if (parts.length === 0) return [];
+            return parts.filter(part => {
+                if (!part || !part.type) return false;
+                if (part.type === 'text') return String(part.content || '').length > 0;
+                if (part.type === 'emoji') return !!part.url;
+                return false;
+            });
+        }
+
+        function renderGiftBodyContent(bodyEl, payload) {
+            if (!bodyEl) return;
+            const parts = normalizeGiftBodyParts(payload);
+            bodyEl.replaceChildren();
+            if (parts.length === 0) {
+                bodyEl.innerText = payload.bodyText || '';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            parts.forEach(part => {
+                if (part.type === 'text') {
+                    const span = document.createElement('span');
+                    span.className = 'gift-part-text';
+                    span.textContent = part.content || '';
+                    fragment.appendChild(span);
+                    return;
+                }
+                if (part.type === 'emoji' && part.url) {
+                    const img = document.createElement('img');
+                    img.className = `gift-part-emoji${part.isSticker ? ' gift-part-sticker' : ''}`;
+                    img.src = part.url;
+                    img.alt = part.alt || '';
+                    img.loading = 'eager';
+                    img.decoding = 'async';
+                    fragment.appendChild(img);
+                }
+            });
+            bodyEl.appendChild(fragment);
+        }
+
+        function applyGiftCardLayout() {
+            const card = document.getElementById('obs-gift-card');
+            if (!card) return;
+            const metrics = getGiftCardMetrics();
+            card.style.left = `${metrics.leftPercent}%`;
+            card.style.top = `${metrics.topPercent}%`;
+            card.style.width = `${metrics.widthPx}px`;
+            card.style.minHeight = `${metrics.minHeightPx}px`;
+            card.style.padding = `${metrics.paddingY}px ${metrics.paddingX}px`;
+        }
+
+        function renderNormalTelop(payload) {
+            const container = document.getElementById('obs-telop');
+            const textEl = document.getElementById('obs-text');
+            if (!container || !textEl) return;
+
+            if (!payload.visible || !payload.text) {
+                container.classList.add('hidden-telop');
+                return;
+            }
+
+            const newText = payload.text;
+            if (textEl.innerText === newText && !container.classList.contains('hidden-telop')) {
+                return;
+            }
+
+            textEl.style.opacity = 0;
+            setTimeout(() => {
+                textEl.innerText = newText;
+                textEl.style.opacity = 1;
+                container.classList.remove('hidden-telop');
+            }, 250);
+        }
+
+        function renderGiftCard(payload) {
+            const cardEl = document.getElementById('obs-gift-card');
+            const labelEl = document.getElementById('obs-gift-label');
+            const userEl = document.getElementById('obs-gift-user');
+            const amountEl = document.getElementById('obs-gift-amount');
+            const bodyEl = document.getElementById('obs-gift-body');
+            if (!labelEl || !userEl || !amountEl || !bodyEl || !cardEl) return;
+
+            applyGiftCardLayout();
+            cardEl.classList.remove('rank-low', 'rank-mid', 'rank-high');
+            cardEl.classList.add(`rank-${payload.rankId || 'low'}`);
+            labelEl.innerText = payload.headerLabel || '';
+            userEl.innerText = payload.headerUserText || '';
+            amountEl.innerText = payload.headerAmountText || '';
+            amountEl.style.display = payload.headerAmountText ? '' : 'none';
+            renderGiftBodyContent(bodyEl, payload);
+        }
+
+        function applyDisplayMode(payload) {
+            const telopEl = document.getElementById('obs-telop');
+            const cardEl = document.getElementById('obs-gift-card');
+            if (!telopEl || !cardEl) return;
+
+            if (!payload.visible) {
+                telopEl.classList.add('hidden-telop');
+                telopEl.classList.remove('telop-hidden-for-gift');
+                cardEl.classList.add('hidden');
+                return;
+            }
+
+            if (payload.mode === 'gift') {
+                renderGiftCard(payload);
+                telopEl.classList.remove('hidden-telop');
+                telopEl.classList.add('telop-hidden-for-gift');
+                cardEl.classList.remove('hidden');
+                return;
+            }
+
+            telopEl.classList.remove('telop-hidden-for-gift');
+            cardEl.classList.add('hidden');
+            renderNormalTelop(payload);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>

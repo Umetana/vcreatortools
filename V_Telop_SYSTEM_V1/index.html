@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<!--
+VTuber Telop System
+Version: 1.0.6
+Author: Umetana
+-->
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTuberテロップシステム v1.0.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=Kaisei+Tokumin:wght@700&family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./css/vtelop-common.css">
+    <script src="../__origin/js/onesdk.js"></script>
+    <script src="../__shared/js/vct_one_core.js"></script>
+    <style>
+        body.mode-display {
+            background-color: transparent !important;
+            overflow: hidden;
+        }
+
+        .preview-box .telop-container {
+            position: absolute;
+        }
+
+        .btn-transition {
+            transition: all 0.2s;
+        }
+
+        .btn-transition:active {
+            transform: scale(0.95);
+        }
+
+        .preview-box {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            background: #ccc;
+            background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee),
+                linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* 初期化ボタンの無効化スタイル */
+        #cfg-reset-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .gift-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            background: rgba(79, 70, 229, 0.12);
+            color: #4338ca;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 h-screen overflow-hidden flex flex-col">
+
+    <nav id="global-nav" class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center z-50">
+        <h1 class="font-bold text-xl cursor-pointer" onclick="switchView('portal')">テロップシステム v1.0.7</h1>
+        <div class="space-x-4 text-sm md:text-base">
+            <button onclick="switchView('generator')" class="hover:text-indigo-200">ジェネレーター</button>
+            <button onclick="switchView('settings')" class="hover:text-indigo-200">設定</button>
+            <button onclick="switchView('controller')"
+                class="bg-white text-indigo-600 px-3 py-1 rounded-md font-bold hover:bg-indigo-50">操作パネル</button>
+            <button onclick="enterDisplayMode()" class="hover:text-indigo-200">表示専用へ</button>
+        </div>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto relative">
+
+        <!-- ポータル -->
+        <div id="view-portal" class="view-section h-full flex flex-col items-center justify-center p-8 hidden">
+            <h2 class="text-3xl font-bold mb-8 text-gray-700">システムメニュー</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl w-full">
+                <div onclick="switchView('generator')"
+                    class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md cursor-pointer border-t-4 border-blue-500 btn-transition">
+                    <h3 class="text-xl font-bold mb-2 flex items-center">📝 ジェネレーター</h3>
+                    <p class="text-gray-600 text-sm">トークリストの作成・バックアップ管理。</p>
+                </div>
+                <div onclick="switchView('settings')"
+                    class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md cursor-pointer border-t-4 border-gray-500 btn-transition">
+                    <h3 class="text-xl font-bold mb-2 flex items-center">⚙️ 表示設定</h3>
+                    <p class="text-gray-600 text-sm">色・透明度・位置・フォントの微調整。</p>
+                </div>
+                <div onclick="switchView('controller')"
+                    class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md cursor-pointer border-t-4 border-indigo-500 btn-transition col-span-1 md:col-span-2">
+                    <h3 class="text-xl font-bold mb-2 flex items-center">🎮 操作パネル</h3>
+                    <p class="text-gray-600 text-sm">配信中のメイン操作。話題の切り替え。</p>
+                </div>
+                <div onclick="enterDisplayMode()"
+                    class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md cursor-pointer border-t-4 border-emerald-500 btn-transition col-span-1 md:col-span-2">
+                    <h3 class="text-xl font-bold mb-2 flex items-center">📺 表示専用モード</h3>
+                    <p class="text-gray-600 text-sm">URLパラメータ不要で、この画面を表示専用へ切り替えます。</p>
+                </div>
+            </div>
+            <p class="mt-6 text-sm text-gray-500">表示専用から戻るときは <code>Ctrl + Shift + D</code> または <code>Escape</code> を使います。</p>
+        </div>
+
+        <!-- ジェネレーター -->
+        <div id="view-generator" class="view-section p-8 max-w-4xl mx-auto hidden">
+            <h2 class="text-2xl font-bold mb-6 border-b pb-2 text-blue-700">📝 データジェネレーター</h2>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex items-center gap-2 mb-4 border-b pb-4">
+                    <span class="text-xs font-bold text-gray-400 uppercase mr-2">Editing:</span>
+                    <button onclick="switchEditingSlot(0)" id="gen-slot-0"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-indigo-500 bg-indigo-500 text-white">Preset
+                        1</button>
+                    <button onclick="switchEditingSlot(1)" id="gen-slot-1"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300">Preset
+                        2</button>
+                    <button onclick="switchEditingSlot(2)" id="gen-slot-2"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300">Preset
+                        3</button>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-gray-700 font-bold">本日のトークテーマ（1行1項目）</label>
+                    <button onclick="clearGeneratorInput()"
+                        class="text-xs bg-red-50 text-red-500 hover:bg-red-100 px-2 py-1 rounded border border-red-200 font-bold btn-transition">
+                        すべて消去
+                    </button>
+                </div>
+                <textarea id="gen-input"
+                    class="w-full h-48 p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none mb-4"
+                    placeholder="開始の挨拶&#13;&#10;雑談ネタ"></textarea>
+
+                <div class="flex gap-4">
+                    <button onclick="saveDataToStorage()"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 btn-transition flex-1">
+                        システムに登録
+                    </button>
+                    <button onclick="exportData()"
+                        class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-300 btn-transition">
+                        バックアップDL
+                    </button>
+                </div>
+                <div class="mt-4 pt-4 border-t text-center">
+                    <label
+                        class="inline-block bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-50 btn-transition cursor-pointer w-full">
+                        📥 バックアップ(.json)を読み込む
+                        <input type="file" id="gen-file-input" accept=".json" class="hidden"
+                            onchange="importData(event)">
+                    </label>
+                </div>
+                <p id="gen-msg" class="text-green-600 font-bold mt-4 hidden text-center"></p>
+            </div>
+        </div>
+
+        <!-- 設定 -->
+        <div id="view-settings" class="view-section p-8 max-w-4xl mx-auto hidden">
+            <div class="flex justify-between items-center mb-6 border-b pb-2">
+                <h2 class="text-2xl font-bold">⚙️ 表示設定</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-400 uppercase mr-2">Editing:</span>
+                    <button onclick="switchEditingSlot(0)" id="set-slot-0"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-indigo-500 bg-indigo-500 text-white">Preset
+                        1</button>
+                    <button onclick="switchEditingSlot(1)" id="set-slot-1"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300">Preset
+                        2</button>
+                    <button onclick="switchEditingSlot(2)" id="set-slot-2"
+                        class="px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300">Preset
+                        3</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm space-y-6 overflow-y-auto max-h-[70vh]">
+
+                    <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-lg space-y-3">
+                        <label class="block text-indigo-700 font-bold text-sm uppercase">Font Style (フォント)</label>
+                        <div>
+                            <select id="cfg-font" class="w-full p-2 border rounded-md bg-white">
+                                <option value="'Noto Sans JP', sans-serif">Noto Sans JP (標準)</option>
+                                <option value="'Mochiy Pop One', sans-serif">Mochiy Pop One (ポップ)</option>
+                                <option value="'Dela Gothic One', sans-serif">Dela Gothic One (極太)</option>
+                                <option value="'Kaisei Tokumin', serif">Kaisei Tokumin (明朝体)</option>
+                                <option value="'DotGothic16', sans-serif">DotGothic16 (ドット風)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                        <label class="block text-indigo-700 font-bold text-sm uppercase">Text (文字)</label>
+                        <div class="grid grid-cols-2 gap-4 items-end">
+                            <div>
+                                <label class="text-xs text-gray-500">色</label>
+                                <div class="flex gap-1">
+                                    <input type="color" id="cfg-color"
+                                        class="w-12 h-10 cursor-pointer rounded border p-0 flex-shrink-0">
+                                    <input type="text" id="cfg-color-hex"
+                                        class="flex-1 px-2 text-xs border rounded uppercase font-mono h-10"
+                                        placeholder="#FFFFFF">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <label class="text-xs text-gray-500 flex justify-between">
+                                    不透明度 <span id="val-color-alpha">100%</span>
+                                </label>
+                                <input type="range" id="cfg-color-alpha" min="0" max="100" value="100"
+                                    class="w-full h-10">
+                            </div>
+                        </div>
+
+                        <!-- Outline Settings -->
+                        <div class="pt-2 border-t mt-2 space-y-3">
+                            <label class="block text-xs font-bold text-gray-400 uppercase">Outline (縁取り)</label>
+                            <div class="grid grid-cols-2 gap-4 items-end">
+                                <div>
+                                    <label class="text-xs text-gray-500">色</label>
+                                    <div class="flex gap-1">
+                                        <input type="color" id="cfg-outline-color"
+                                            class="w-12 h-10 cursor-pointer rounded border p-0 flex-shrink-0"
+                                            value="#000000">
+                                        <input type="text" id="cfg-outline-color-hex"
+                                            class="flex-1 px-2 text-xs border rounded uppercase font-mono h-10"
+                                            placeholder="#000000">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    <label class="text-xs text-gray-500 flex justify-between">
+                                        不透明度 <span id="val-outline-alpha">100%</span>
+                                    </label>
+                                    <input type="range" id="cfg-outline-alpha" min="0" max="100" value="100"
+                                        class="w-full h-10">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 flex justify-between">
+                                    太さ <span id="val-outline-width">0px</span>
+                                </label>
+                                <input type="range" id="cfg-outline-width" min="0" max="20" value="0" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                        <label class="block text-indigo-700 font-bold text-sm uppercase">Background (背景)</label>
+                        <div class="grid grid-cols-2 gap-4 items-end">
+                            <div>
+                                <label class="text-xs text-gray-500">色</label>
+                                <div class="flex gap-1">
+                                    <input type="color" id="cfg-bg-base"
+                                        class="w-12 h-10 cursor-pointer rounded border p-0 flex-shrink-0">
+                                    <input type="text" id="cfg-bg-base-hex"
+                                        class="flex-1 px-2 text-xs border rounded uppercase font-mono h-10"
+                                        placeholder="#000000">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <label class="text-xs text-gray-500 flex justify-between">
+                                    不透明度 <span id="val-bg-alpha">75%</span>
+                                </label>
+                                <input type="range" id="cfg-bg-alpha" min="0" max="100" value="75" class="w-full h-10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                        <label class="block text-indigo-700 font-bold text-sm uppercase">Accent Line (線)</label>
+                        <div class="grid grid-cols-2 gap-4 items-end">
+                            <div>
+                                <label class="text-xs text-gray-500">色</label>
+                                <div class="flex gap-1">
+                                    <input type="color" id="cfg-border"
+                                        class="w-12 h-10 cursor-pointer rounded border p-0 flex-shrink-0">
+                                    <input type="text" id="cfg-border-hex"
+                                        class="flex-1 px-2 text-xs border rounded uppercase font-mono h-10"
+                                        placeholder="#4F46E5">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <label class="text-xs text-gray-500 flex justify-between">
+                                    不透明度 <span id="val-border-alpha">100%</span>
+                                </label>
+                                <input type="range" id="cfg-border-alpha" min="0" max="100" value="100"
+                                    class="w-full h-10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-4">
+                        <label class="block text-indigo-700 font-bold text-sm uppercase">Layout (配置)</label>
+                        <div class="pt-2">
+                            <label class="text-xs text-gray-500">フレーム（画像プリセット）</label>
+                            <select id="cfg-framePreset" class="w-full p-2 border rounded-md bg-white">
+                                <option value="news">News</option>
+                                <option value="news2">News2</option>
+                                <option value="pop">Pop</option>
+                                <option value="pop2">Pop2</option>
+                                <option value="pop3">Pop3</option>
+                                <option value="none">None（透明）</option>
+                            </select>
+                        </div>
+
+
+                        <div>
+                            <label class="text-xs text-gray-500">フォントサイズ (px)</label>
+                            <input type="number" id="cfg-size" class="w-full p-2 border rounded-md" value="36">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 flex justify-between">
+                                垂直位置 (Y軸) <span id="val-pos-y">90%</span>
+                            </label>
+                            <input type="range" id="cfg-pos-y" min="0" max="100" value="90" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 flex justify-between">
+                                水平位置 (X軸) <span id="val-pos-x">50%</span>
+                            </label>
+                            <input type="range" id="cfg-pos-x" min="0" max="100" value="50" class="w-full">
+                        </div>
+                        <div class="pt-2 border-t mt-2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Text Offset
+                                (文字の微調整)</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs text-gray-500 flex justify-between">
+                                        左右 <span id="val-text-offset-x">0px</span>
+                                    </label>
+                                    <input type="range" id="cfg-text-offset-x" min="-200" max="200" value="0"
+                                        class="w-full">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 flex justify-between">
+                                        上下 <span id="val-text-offset-y">0px</span>
+                                    </label>
+                                    <input type="range" id="cfg-text-offset-y" min="-200" max="200" value="0"
+                                        class="w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500 flex justify-between">
+                                フレーム倍率 <span id="val-frame-scale">1.00</span>
+                            </label>
+                            <input type="range" id="cfg-frame-scale" min="0.6" max="1.4" step="0.01" value="1.0"
+                                class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 flex justify-between">
+                                ギフトカード倍率 <span id="val-gift-card-scale">0.86</span>
+                            </label>
+                            <input type="range" id="cfg-gift-card-scale" min="0.6" max="1.2" step="0.01" value="0.86"
+                                class="w-full">
+                        </div>
+                        <div class="pt-2 border-t mt-2">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" id="cfg-fullWidth" class="w-4 h-4">
+                                <span class="text-sm font-bold text-indigo-700">帯状にする（横幅いっぱい）</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-green-50 border border-green-100 rounded-lg space-y-3">
+                        <label class="block text-green-700 font-bold text-sm uppercase">Remote Link (外部連携)</label>
+                        <div>
+                            <label class="text-xs text-gray-500 italic mb-1 block">GP MULTI COUNTER の対象IDを指定（例:
+                                counter1）</label>
+                            <input type="text" id="cfg-remote-id" class="w-full p-2 border rounded-md bg-white"
+                                placeholder="counter1" value="">
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-amber-50 border border-amber-100 rounded-lg space-y-4">
+                        <label class="block text-amber-700 font-bold text-sm uppercase">Gift Interrupt (わんコメ連携)</label>
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="gift-enabled" class="w-4 h-4">
+                            <span class="text-sm font-bold text-amber-800">ギフト割り込みを有効にする</span>
+                        </label>
+                        <div>
+                            <label class="text-xs text-gray-500">キュー上限</label>
+                            <input type="number" id="gift-queue-limit" min="1" max="50" class="w-full p-2 border rounded-md bg-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">発動モード</label>
+                            <select id="gift-trigger-mode" class="w-full p-2 border rounded-md bg-white">
+                                <option value="command_only">コマンド付きギフトのみ</option>
+                                <option value="all">全ギフトで発動</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <label class="block">
+                                <span class="text-xs text-gray-500">Low 秒数</span>
+                                <input type="number" id="gift-duration-low" min="1" max="120" class="w-full p-2 border rounded-md bg-white">
+                            </label>
+                            <label class="block">
+                                <span class="text-xs text-gray-500">Mid 秒数</span>
+                                <input type="number" id="gift-duration-mid" min="1" max="120" class="w-full p-2 border rounded-md bg-white">
+                            </label>
+                            <label class="block">
+                                <span class="text-xs text-gray-500">High 秒数</span>
+                                <input type="number" id="gift-duration-high" min="1" max="120" class="w-full p-2 border rounded-md bg-white">
+                            </label>
+                        </div>
+                        <p class="text-xs text-amber-800 leading-relaxed">
+                            金額閾値は初版では固定です。<br>
+                            `Low: 1以上 / Mid: 1000以上 / High: 5000以上`
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <button id="cfg-save-btn" onclick="saveConfig()"
+                            class="bg-indigo-600 text-white px-8 py-4 rounded-lg font-bold hover:bg-indigo-700 w-full btn-transition shadow-lg">
+                            設定を保存
+                        </button>
+
+                        <div class="pt-6 border-t mt-6">
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <label class="flex items-center gap-2 cursor-pointer mb-3 select-none">
+                                    <input type="checkbox" id="cfg-reset-lock" class="w-4 h-4"
+                                        onchange="toggleResetBtn()">
+                                    <span class="text-xs text-red-700 font-bold">設定を初期化（デフォルトに戻す）を許可する</span>
+                                </label>
+                                <button id="cfg-reset-btn" onclick="resetConfig()" disabled
+                                    class="bg-white border border-red-300 text-red-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 hover:text-white w-full btn-transition">
+                                    すべての表示設定を初期化
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="block text-gray-700 font-bold mb-2">リアルタイムプレビュー</label>
+                    <div
+                        class="preview-box border-2 border-dashed border-gray-300 flex-1 relative min-h-[350px] bg-gray-200">
+                        <div id="preview-telop" class="telop-container">
+                            <img id="preview-frame" class="telop-frame" alt="">
+                            <span id="preview-text" class="telop-text">プレビューテキスト</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作パネル -->
+        <div id="view-controller" class="view-section p-4 h-full flex flex-col max-w-4xl mx-auto hidden">
+            <div
+                class="bg-white p-4 rounded-xl shadow-sm mb-4 flex justify-between items-center border-t-4 border-indigo-500">
+                <div class="flex-1 mr-4">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-gray-400 font-bold text-xs uppercase">On-Air Slot</span>
+                        <div class="flex gap-1">
+                            <button onclick="activateSlot(0)" id="ctrl-slot-0"
+                                class="px-2 py-0.5 rounded text-[10px] font-bold border transition-all bg-indigo-600 text-white border-indigo-600">SLOT
+                                1</button>
+                            <button onclick="activateSlot(1)" id="ctrl-slot-1"
+                                class="px-2 py-0.5 rounded text-[10px] font-bold border transition-all bg-white text-gray-400 border-gray-200">SLOT
+                                2</button>
+                            <button onclick="activateSlot(2)" id="ctrl-slot-2"
+                                class="px-2 py-0.5 rounded text-[10px] font-bold border transition-all bg-white text-gray-400 border-gray-200">SLOT
+                                3</button>
+                        </div>
+                    </div>
+                    <div class="text-xl font-bold text-indigo-700 truncate" id="ctrl-current-text">待機中...</div>
+                    <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                        <span id="ctrl-interrupt-badge" class="gift-indicator hidden">Gift Queue</span>
+                        <span id="ctrl-interrupt-status">通常表示</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 border-l pl-4">
+                    <button id="ctrl-toggle-btn" onclick="toggleVisibility()"
+                        class="bg-green-500 text-white px-6 py-2 rounded-md font-bold btn-transition shadow-sm">ON</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-indigo-100">
+                <button type="button" onclick="toggleAutoRotatePanel()"
+                    class="w-full flex items-center justify-between gap-4 text-left">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Auto Rotation</div>
+                        <div id="ctrl-auto-summary" class="text-sm text-gray-600">お知らせや箇条書きを一定時間ごとに自動で切り替えます。</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="ctrl-auto-status" class="text-xs font-bold text-gray-400">自動送りは停止中です</div>
+                        <span id="ctrl-auto-panel-icon" class="text-gray-400 text-sm">▼</span>
+                    </div>
+                </button>
+                <div id="ctrl-auto-panel" class="hidden mt-4 pt-4 border-t border-indigo-100">
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <div class="flex items-end gap-3 flex-wrap">
+                            <label class="block">
+                                <span class="text-xs text-gray-500">切替秒数</span>
+                                <input id="ctrl-auto-seconds" type="number" min="1" max="600" value="8"
+                                    class="w-24 p-2 border rounded-md bg-white">
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-gray-600 pb-2">
+                                <input id="ctrl-auto-loop" type="checkbox" class="w-4 h-4" checked>
+                                <span>ループ</span>
+                            </label>
+                            <button id="ctrl-auto-btn" onclick="toggleAutoRotate()"
+                                class="bg-orange-500 text-white px-5 py-2 rounded-md font-bold btn-transition shadow-sm">AUTO
+                                OFF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 bg-white rounded-xl shadow-sm flex flex-col overflow-hidden border">
+                <div class="flex-1 overflow-y-auto p-2" id="ctrl-list"></div>
+                <div class="bg-gray-50 p-4 border-t flex justify-between items-center gap-4">
+                    <button onclick="changeIndex(-1)"
+                        class="bg-white border text-gray-700 flex-1 py-4 rounded-xl font-bold text-xl hover:bg-gray-100 btn-transition shadow-sm">◀
+                        PREV</button>
+                    <div class="text-center min-w-[80px]">
+                        <span id="ctrl-progress" class="text-lg font-mono font-bold text-gray-500">0 / 0</span>
+                    </div>
+                    <button onclick="changeIndex(1)"
+                        class="bg-indigo-600 text-white flex-1 py-4 rounded-xl font-bold text-xl hover:bg-indigo-700 btn-transition shadow-lg">NEXT
+                        ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 表示モード用 -->
+        <div id="view-display" class="view-section hidden w-full h-full">
+            <div id="obs-telop" class="telop-container">
+                <img id="obs-frame" class="telop-frame" alt="">
+                <div id="obs-text" class="telop-text"></div>
+            </div>
+            <div id="obs-gift-card" class="gift-card hidden">
+                <div id="obs-gift-header" class="gift-card-header">
+                    <div id="obs-gift-label" class="gift-card-label"></div>
+                    <div id="obs-gift-user" class="gift-card-user"></div>
+                    <div id="obs-gift-amount" class="gift-card-amount"></div>
+                </div>
+                <div id="obs-gift-body" class="gift-card-body"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const BC_NAME = 'vtuber_telop_channel';
+        const DISPLAY_MODE_STORAGE_KEY = 'vt_telop_runtime_view_mode';
+        const GIFT_RUNTIME_STORAGE_KEY = 'vt_telop_gift_runtime';
+        const GIFT_BASE_FRAME_WIDTH = 1920;
+        const GIFT_BASE_FRAME_HEIGHT = 300;
+        const bc = new BroadcastChannel(BC_NAME);
+        const remoteBc = new BroadcastChannel('obs_counter_sync');
+        let lastRemoteCount = null;
+        let autoRotateTimer = null;
+
+        const FRAME_PRESETS = {
+            none: { src: null },
+            news: { src: 'frames/news.png' },
+            news2: { src: 'frames/news2.png' },
+            pop: { src: 'frames/pop.png' },
+            pop2: { src: 'frames/pop2.png' },
+            pop3: { src: 'frames/pop3.png' },
+        };
+
+        const DEFAULT_CONFIG = {
+            font: "'Noto Sans JP', sans-serif",
+            color: '#ffffff',
+            colorAlpha: 100,
+            bgBase: '#000000',
+            bgAlpha: 75,
+            border: '#4f46e5',
+            borderAlpha: 100,
+            size: 36,
+            posY: 90,
+
+            // ▼追加
+            posX: 50,              // 左右位置
+            framePreset: 'news',   // none | news | pop
+            frameScale: 1.0,       // フレーム拡大縮小
+            giftCardScale: 0.86,   // ギフトカードの相対倍率
+            textOffsetX: 0,        // 文字Xオフセット
+            textOffsetY: 0,        // 文字Yオフセット
+            remoteId: '',
+            fullWidth: false,      // 追加：帯状にするかどうか
+            outlineColor: '#000000',
+            outlineWidth: 0,
+            outlineAlpha: 100
+        };
+
+        const DEFAULT_GIFT_RULES = {
+            enabled: true,
+            triggerMode: 'command_only',
+            queueLimit: 5,
+            ranks: [
+                { id: 'low', minAmount: 1, durationSec: 8 },
+                { id: 'mid', minAmount: 1000, durationSec: 12 },
+                { id: 'high', minAmount: 5000, durationSec: 18 }
+            ]
+        };
+
+        const GIFT_CURRENCY_TO_JPY_RATE = {
+            JPY: 1,
+            YEN: 1,
+            USD: 150,
+            US$: 150,
+            TWD: 4.7,
+            NTD: 4.7,
+            HKD: 19,
+            KRW: 0.11,
+            EUR: 163,
+            GBP: 190,
+            AUD: 98,
+            CAD: 110,
+            SGD: 112
+        };
+
+        const GIFT_JACK_COMMANDS = new Set(['jack', 'sponsor', '支援', 'スポンサー']);
+
+        let oneCommeReady = false;
+
+        let state = {
+            presets: [
+                { data: [], config: { ...DEFAULT_CONFIG } },
+                { data: [], config: { ...DEFAULT_CONFIG } },
+                { data: [], config: { ...DEFAULT_CONFIG } }
+            ],
+            activeIndex: 0,    // On-air preset index (0-2)
+            editingIndex: 0,   // Current selecting preset for editing (0-2)
+            index: 0,          // Current line index in the active preset
+            visible: true,
+            autoRotate: {
+                enabled: false,
+                intervalSec: 8,
+                loop: true
+            },
+            autoRotatePanelOpen: false,
+            giftInterrupt: normalizeGiftRules()
+        };
+
+        // For backward compatibility and convenience
+        Object.defineProperty(state, 'data', { get() { return this.presets[this.activeIndex].data; } });
+        Object.defineProperty(state, 'config', { get() { return this.presets[this.activeIndex].config; } });
+
+        function normalizePreset(preset = {}) {
+            return {
+                data: Array.isArray(preset.data) ? preset.data : [],
+                config: { ...DEFAULT_CONFIG, ...(preset.config || {}) }
+            };
+        }
+
+        function normalizePresets(presets) {
+            const normalized = Array.isArray(presets) ? presets.slice(0, 3).map(normalizePreset) : [];
+            while (normalized.length < 3) {
+                normalized.push(normalizePreset());
+            }
+            return normalized;
+        }
+
+        function normalizeGiftRules(rules = {}) {
+            const sourceRanks = Array.isArray(rules.ranks) ? rules.ranks : DEFAULT_GIFT_RULES.ranks;
+            const mergedRanks = DEFAULT_GIFT_RULES.ranks.map((rank, index) => ({
+                ...rank,
+                ...(sourceRanks[index] || {}),
+                minAmount: Number((sourceRanks[index] || {}).minAmount ?? rank.minAmount) || rank.minAmount,
+                durationSec: Math.max(1, Number((sourceRanks[index] || {}).durationSec ?? rank.durationSec) || rank.durationSec)
+            }));
+
+            return {
+                enabled: rules.enabled !== undefined ? !!rules.enabled : DEFAULT_GIFT_RULES.enabled,
+                triggerMode: rules.triggerMode === 'all' ? 'all' : DEFAULT_GIFT_RULES.triggerMode,
+                queueLimit: Math.max(1, Number(rules.queueLimit) || DEFAULT_GIFT_RULES.queueLimit),
+                queue: [],
+                current: null,
+                timerId: null,
+                expiresAt: 0,
+                ranks: mergedRanks
+            };
+        }
+
+        function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode') || localStorage.getItem(DISPLAY_MODE_STORAGE_KEY) || 'portal';
+            loadFromStorage();
+            initOneCommeAdapter();
+            if (mode === 'display') {
+                setRuntimeViewMode('display', { persist: mode !== 'display' ? false : true });
+            } else {
+                setRuntimeViewMode('portal', { persist: false });
+            }
+            resumeGiftInterruptIfNeeded();
+            bc.onmessage = handleMessage;
+            remoteBc.onmessage = handleRemoteMessage;
+            syncAutoRotateControls();
+            restartAutoRotateIfNeeded();
+        }
+
+        function handleMessage(event) {
+            const msg = event.data;
+            if (msg.type === 'UPDATE_SLOT') {
+                const { slotIndex, data, config } = msg.payload;
+                state.presets[slotIndex] = normalizePreset({ data, config });
+                if (slotIndex === state.activeIndex) {
+                    if (isVisible('display')) {
+                        applyConfigToElement(document.getElementById('obs-telop'), document.getElementById('obs-text'));
+                        updateDisplayUI();
+                    }
+                }
+                if (isVisible('controller')) {
+                    renderControllerList();
+                    updateControllerUI();
+                }
+                if (isVisible('generator') && slotIndex === state.editingIndex) initGeneratorUI();
+                if (isVisible('settings') && slotIndex === state.editingIndex) {
+                    initConfigUI();
+                    reflectConfigToPreview();
+                }
+            }
+            if (msg.type === 'SWITCH_ACTIVE_SLOT') {
+                state.activeIndex = msg.payload;
+                state.index = 0;
+                if (isVisible('display')) {
+                    applyConfigToElement(document.getElementById('obs-telop'), document.getElementById('obs-text'));
+                    updateDisplayUI();
+                }
+                if (isVisible('controller')) {
+                    updateControllerUI();
+                }
+            }
+            if (msg.type === 'UPDATE_DATA') {
+                // This legacy type now updates the active slot
+                state.presets[state.activeIndex].data = msg.payload;
+                state.index = 0;
+                if (isVisible('controller')) renderControllerList();
+                if (isVisible('display')) updateDisplayUI();
+            }
+            if (msg.type === 'UPDATE_INDEX') {
+                state.index = msg.payload;
+                if (isVisible('controller')) updateControllerUI();
+                if (isVisible('display')) updateDisplayUI();
+            }
+            if (msg.type === 'TOGGLE_VISIBILITY') {
+                state.visible = msg.payload;
+                if (isVisible('controller')) updateControllerUI();
+                if (isVisible('display')) updateDisplayUI();
+            }
+            if (msg.type === 'LIVE_CONFIG') {
+                // Live config updates the active slot's config for immediate feedback
+                state.presets[state.activeIndex].config = { ...DEFAULT_CONFIG, ...msg.payload };
+                if (isVisible('display')) applyConfigToElement(document.getElementById('obs-telop'), document.getElementById('obs-text'));
+                if (isVisible('settings')) reflectConfigToPreview();
+            }
+            if (msg.type === 'AUTO_ROTATE_SETTINGS') {
+                state.autoRotate = {
+                    ...state.autoRotate,
+                    ...msg.payload,
+                    intervalSec: Math.max(1, parseInt(msg.payload.intervalSec, 10) || state.autoRotate.intervalSec || 8),
+                    enabled: !!msg.payload.enabled,
+                    loop: !!msg.payload.loop
+                };
+                saveAutoRotateSettings();
+                syncAutoRotateControls();
+                restartAutoRotateIfNeeded();
+            }
+            if (msg.type === 'GIFT_INTERRUPT_STATE') {
+                state.giftInterrupt.current = msg.payload?.current || null;
+                state.giftInterrupt.expiresAt = Number(msg.payload?.expiresAt || 0);
+                if (isVisible('display')) updateDisplayUI();
+                if (isVisible('controller')) updateControllerUI();
+            }
+        }
+
+        function handleRemoteMessage(event) {
+            const msg = event.data;
+            const targetId = state.config.remoteId;
+            if (msg.type === 'update' && targetId) {
+                const counterData = msg.payload.find(c => c.id === targetId);
+                if (counterData) {
+                    const currentCount = counterData.count;
+                    if (lastRemoteCount !== null) {
+                        if (currentCount > lastRemoteCount) changeIndex(1);
+                        else if (currentCount < lastRemoteCount) changeIndex(-1);
+                    }
+                    lastRemoteCount = currentCount;
+                }
+            }
+        }
+
+        const isVisible = (id) => {
+            const el = document.getElementById(`view-${id}`);
+            return el && !el.classList.contains('hidden');
+        };
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            if (viewId === 'controller') { renderControllerList(); updateControllerUI(); }
+            if (viewId === 'settings') { initConfigUI(); reflectConfigToPreview(); }
+            if (viewId === 'generator') { initGeneratorUI(); }
+        }
+
+        function setRuntimeViewMode(mode, options = {}) {
+            const { persist = true } = options;
+            const isDisplay = mode === 'display';
+            document.body.classList.toggle('mode-display', isDisplay);
+            document.getElementById('global-nav').style.display = isDisplay ? 'none' : '';
+            if (persist) localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, isDisplay ? 'display' : 'portal');
+
+            if (isDisplay) {
+                switchView('display');
+                applyConfigToElement(document.getElementById('obs-telop'), document.getElementById('obs-text'));
+                updateDisplayUI();
+            } else {
+                switchView('portal');
+                initGeneratorUI();
+                initConfigUI();
+            }
+        }
+
+        function enterDisplayMode() {
+            setRuntimeViewMode('display');
+        }
+
+        function exitDisplayMode() {
+            setRuntimeViewMode('portal');
+        }
+
+        function loadFromStorage() {
+            const sPresets = localStorage.getItem('vt_telop_presets');
+            const sActiveIdx = localStorage.getItem('vt_telop_active_slot');
+            const sIdx = localStorage.getItem('vt_telop_index');
+            const sVis = localStorage.getItem('vt_telop_visible');
+            const sAutoRotate = localStorage.getItem('vt_telop_auto_rotate');
+            const sGiftRules = localStorage.getItem('vt_telop_gift_interrupt');
+
+            if (sPresets) {
+                state.presets = normalizePresets(JSON.parse(sPresets));
+            } else {
+                // Migration or initial load
+                const sData = localStorage.getItem('vt_telop_data');
+                const sCfg = localStorage.getItem('vt_telop_config');
+                if (sData) state.presets[0].data = JSON.parse(sData);
+                if (sCfg) state.presets[0].config = { ...DEFAULT_CONFIG, ...JSON.parse(sCfg) };
+            }
+
+            state.presets = normalizePresets(state.presets);
+
+            if (sActiveIdx) state.activeIndex = parseInt(sActiveIdx, 10);
+            if (sIdx) state.index = parseInt(sIdx, 10);
+            if (sVis) state.visible = JSON.parse(sVis);
+            if (sAutoRotate) {
+                state.autoRotate = { ...state.autoRotate, ...JSON.parse(sAutoRotate) };
+                state.autoRotate.intervalSec = Math.max(1, parseInt(state.autoRotate.intervalSec, 10) || 8);
+                state.autoRotate.loop = !!state.autoRotate.loop;
+                state.autoRotate.enabled = !!state.autoRotate.enabled;
+            }
+            if (sGiftRules) {
+                state.giftInterrupt = normalizeGiftRules(JSON.parse(sGiftRules));
+            }
+            restoreGiftRuntimeState();
+
+            state.editingIndex = state.activeIndex;
+        }
+
+        function saveToStorage(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+        function saveAutoRotateSettings() { saveToStorage('vt_telop_auto_rotate', state.autoRotate); }
+        function saveGiftRules() {
+            const persistable = {
+                enabled: state.giftInterrupt.enabled,
+                triggerMode: state.giftInterrupt.triggerMode,
+                queueLimit: state.giftInterrupt.queueLimit,
+                ranks: state.giftInterrupt.ranks.map(rank => ({
+                    id: rank.id,
+                    minAmount: rank.minAmount,
+                    durationSec: rank.durationSec
+                }))
+            };
+            saveToStorage('vt_telop_gift_interrupt', persistable);
+        }
+
+        function clearGiftRuntimeStorage() {
+            localStorage.removeItem(GIFT_RUNTIME_STORAGE_KEY);
+        }
+
+        function restoreGiftRuntimeState() {
+            const sGiftRuntime = localStorage.getItem(GIFT_RUNTIME_STORAGE_KEY);
+            if (!sGiftRuntime) return;
+
+            try {
+                const runtime = JSON.parse(sGiftRuntime);
+                const expiresAt = Number(runtime?.expiresAt || 0);
+                if (!runtime?.current || !expiresAt || Date.now() >= expiresAt) {
+                    state.giftInterrupt.current = null;
+                    state.giftInterrupt.expiresAt = 0;
+                    clearGiftRuntimeStorage();
+                    return;
+                }
+
+                state.giftInterrupt.current = runtime.current;
+                state.giftInterrupt.expiresAt = expiresAt;
+            } catch {
+                state.giftInterrupt.current = null;
+                state.giftInterrupt.expiresAt = 0;
+                clearGiftRuntimeStorage();
+            }
+        }
+
+        function saveGiftRuntimeState() {
+            saveToStorage(GIFT_RUNTIME_STORAGE_KEY, {
+                current: state.giftInterrupt.current,
+                expiresAt: state.giftInterrupt.expiresAt || 0
+            });
+            bc.postMessage({
+                type: 'GIFT_INTERRUPT_STATE',
+                payload: {
+                    current: state.giftInterrupt.current,
+                    expiresAt: state.giftInterrupt.expiresAt || 0
+                }
+            });
+        }
+
+        function resumeGiftInterruptIfNeeded() {
+            if (!state.giftInterrupt.current) return;
+            const remainingMs = Number(state.giftInterrupt.expiresAt || 0) - Date.now();
+            if (remainingMs <= 0) {
+                finishGiftInterrupt();
+                return;
+            }
+
+            clearGiftInterruptTimer();
+            state.giftInterrupt.timerId = setTimeout(() => {
+                finishGiftInterrupt();
+            }, remainingMs);
+        }
+
+        function syncAutoRotatePanel() {
+            const panelEl = document.getElementById('ctrl-auto-panel');
+            const iconEl = document.getElementById('ctrl-auto-panel-icon');
+            if (panelEl) panelEl.classList.toggle('hidden', !state.autoRotatePanelOpen);
+            if (iconEl) iconEl.innerText = state.autoRotatePanelOpen ? '▲' : '▼';
+        }
+
+        function toggleAutoRotatePanel(forceOpen = null) {
+            state.autoRotatePanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !state.autoRotatePanelOpen;
+            syncAutoRotatePanel();
+        }
+
+        function showGenMsg(text, isError = false) {
+            const msgEl = document.getElementById('gen-msg');
+            msgEl.innerText = text;
+            msgEl.className = `font-bold mt-4 text-center ${isError ? 'text-red-600' : 'text-green-600'}`;
+            msgEl.classList.remove('hidden');
+            setTimeout(() => msgEl.classList.add('hidden'), 3000);
+        }
+
+        function initGeneratorUI() { document.getElementById('gen-input').value = state.presets[state.editingIndex].data.join('\n'); }
+
+        function switchEditingSlot(idx) {
+            state.editingIndex = idx;
+            // Update UI tabs
+            for (let i = 0; i < 3; i++) {
+                const btn = document.getElementById(`gen-slot-${i}`);
+                if (btn) {
+                    if (i === idx) {
+                        btn.className = "px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-indigo-500 bg-indigo-500 text-white";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300";
+                    }
+                }
+            }
+            initGeneratorUI();
+            if (isVisible('settings')) {
+                initConfigUI();
+                reflectConfigToPreview();
+            }
+        }
+
+        function clearGeneratorInput() {
+            document.getElementById('gen-input').value = '';
+            showGenMsg('テキストエリアを空にしました');
+        }
+
+        function saveDataToStorage() {
+            const data = document.getElementById('gen-input').value.split('\n').map(l => l.trim()).filter(l => l !== "");
+            state.presets[state.editingIndex].data = data;
+
+            saveToStorage('vt_telop_presets', state.presets);
+
+            // If the editing slot is the on-air slot, sync it
+            if (state.editingIndex === state.activeIndex) {
+                state.index = 0;
+                saveToStorage('vt_telop_index', state.index);
+                bc.postMessage({ type: 'UPDATE_DATA', payload: data });
+            }
+            // Notify other instances about the slot update
+            bc.postMessage({
+                type: 'UPDATE_SLOT',
+                payload: {
+                    slotIndex: state.editingIndex,
+                    data: state.presets[state.editingIndex].data,
+                    config: state.presets[state.editingIndex].config
+                }
+            });
+            showGenMsg('✓ プリセット' + (state.editingIndex + 1) + 'に登録しました');
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(state.data, null, 4)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'telop_backup.json';
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (Array.isArray(data)) {
+                        document.getElementById('gen-input').value = data.join('\n');
+                        showGenMsg('✓ バックアップを読み込みました。「登録」で確定してください');
+                    } else {
+                        showGenMsg('❌ 無効なファイル形式です', true);
+                    }
+                } catch (err) {
+                    showGenMsg('❌ 読み込みに失敗しました', true);
+                }
+                e.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function initConfigUI() {
+            const cfg = state.presets[state.editingIndex].config;
+            // Update UI tabs in Settings
+            for (let i = 0; i < 3; i++) {
+                const btn = document.getElementById(`set-slot-${i}`);
+                if (btn) {
+                    if (i === state.editingIndex) {
+                        btn.className = "px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-indigo-500 bg-indigo-500 text-white";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-md font-bold text-sm transition-all border-2 border-gray-200 text-gray-400 hover:border-gray-300";
+                    }
+                }
+            }
+            const binds = [
+                { id: 'cfg-framePreset', key: 'framePreset' },
+                { id: 'cfg-pos-x', key: 'posX' },
+                { id: 'cfg-frame-scale', key: 'frameScale' },
+                { id: 'cfg-gift-card-scale', key: 'giftCardScale' },
+                { id: 'cfg-text-offset-x', key: 'textOffsetX' },
+                { id: 'cfg-text-offset-y', key: 'textOffsetY' },
+                { id: 'cfg-font', key: 'font' }, { id: 'cfg-color', key: 'color' }, { id: 'cfg-color-alpha', key: 'colorAlpha' },
+                { id: 'cfg-bg-base', key: 'bgBase' }, { id: 'cfg-bg-alpha', key: 'bgAlpha' }, { id: 'cfg-border', key: 'border' },
+                { id: 'cfg-border-alpha', key: 'borderAlpha' }, { id: 'cfg-size', key: 'size' }, { id: 'cfg-pos-y', key: 'posY' },
+                { id: 'cfg-remote-id', key: 'remoteId' },
+                { id: 'cfg-fullWidth', key: 'fullWidth' },
+                { id: 'cfg-outline-color', key: 'outlineColor' },
+                { id: 'cfg-outline-alpha', key: 'outlineAlpha' },
+                { id: 'cfg-outline-width', key: 'outlineWidth' }
+            ];
+            binds.forEach(b => {
+                const el = document.getElementById(b.id);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = !!cfg[b.key];
+                    } else {
+                        el.value = cfg[b.key];
+                    }
+
+                    // カラーピッカーとテキスト入力の同期
+                    if (el.type === 'color') {
+                        const hexEl = document.getElementById(`${b.id}-hex`);
+                        if (hexEl) {
+                            hexEl.value = el.value.toUpperCase();
+                            hexEl.oninput = () => {
+                                if (/^#[0-9A-F]{6}$/i.test(hexEl.value)) {
+                                    el.value = hexEl.value;
+                                    updateLiveConfig();
+                                }
+                            };
+                            el.oninput = () => {
+                                hexEl.value = el.value.toUpperCase();
+                                updateLiveConfig();
+                            };
+                        }
+                    } else {
+                        el.oninput = null;
+                    }
+
+                    if (el.type === 'checkbox') {
+                        el.onchange = () => {
+                            updateLiveConfig();
+                        };
+                    } else if (el.type !== 'color') {
+                        el.oninput = () => {
+                            updateLiveConfig();
+                            const id = el.id;
+                            if (id.includes('alpha')) {
+                                const valEl = document.getElementById(`val-${id.split('-')[1]}-alpha`);
+                                if (valEl) valEl.innerText = el.value + '%';
+                            }
+                            if (id === 'cfg-pos-y') {
+                                const posEl = document.getElementById('val-pos-y');
+                                if (posEl) posEl.innerText = el.value + '%';
+                            }
+                            if (id === 'cfg-pos-x') {
+                                const posXEl = document.getElementById('val-pos-x');
+                                if (posXEl) posXEl.innerText = el.value + '%';
+                            }
+                            if (id === 'cfg-outline-width') {
+                                const owEl = document.getElementById('val-outline-width');
+                                if (owEl) owEl.innerText = el.value + 'px';
+                            }
+                            if (id === 'cfg-outline-alpha') {
+                                const oaEl = document.getElementById('val-outline-alpha');
+                                if (oaEl) oaEl.innerText = el.value + '%';
+                            }
+                            if (id === 'cfg-frame-scale') {
+                                const fsEl = document.getElementById('val-frame-scale');
+                                if (fsEl) fsEl.innerText = Number(el.value).toFixed(2);
+                            }
+                            if (id === 'cfg-gift-card-scale') {
+                                const gcsEl = document.getElementById('val-gift-card-scale');
+                                if (gcsEl) gcsEl.innerText = Number(el.value).toFixed(2);
+                            }
+                            if (id === 'cfg-text-offset-x') {
+                                const toxEl = document.getElementById('val-text-offset-x');
+                                if (toxEl) toxEl.innerText = el.value + 'px';
+                            }
+                            if (id === 'cfg-text-offset-y') {
+                                const toyEl = document.getElementById('val-text-offset-y');
+                                if (toyEl) toyEl.innerText = el.value + 'px';
+                            }
+                        };
+                    }
+
+                    if (el.tagName === 'SELECT') {
+                        el.onchange = () => {
+                            updateLiveConfig();
+                        };
+                    }
+
+                    if (el.type === 'range') {
+                        const id = el.id;
+                        if (id.includes('alpha')) {
+                            const valEl = document.getElementById(`val-${id.split('-')[1]}-alpha`);
+                            if (valEl) valEl.innerText = el.value + '%';
+                        }
+                        if (id === 'cfg-pos-y') {
+                            const posEl = document.getElementById('val-pos-y');
+                            if (posEl) posEl.innerText = el.value + '%';
+                        }
+                        if (id === 'cfg-pos-x') {
+                            const posXEl = document.getElementById('val-pos-x');
+                            if (posXEl) posXEl.innerText = el.value + '%';
+                        }
+                        if (id === 'cfg-outline-width') {
+                            const owEl = document.getElementById('val-outline-width');
+                            if (owEl) owEl.innerText = el.value + 'px';
+                        }
+                        if (id === 'cfg-outline-alpha') {
+                            const oaEl = document.getElementById('val-outline-alpha');
+                            if (oaEl) oaEl.innerText = el.value + '%';
+                        }
+                        if (id === 'cfg-frame-scale') {
+                            const fsEl = document.getElementById('val-frame-scale');
+                            if (fsEl) fsEl.innerText = Number(el.value).toFixed(2);
+                        }
+                        if (id === 'cfg-gift-card-scale') {
+                            const gcsEl = document.getElementById('val-gift-card-scale');
+                            if (gcsEl) gcsEl.innerText = Number(el.value).toFixed(2);
+                        }
+                        if (id === 'cfg-text-offset-x') {
+                            const toxEl = document.getElementById('val-text-offset-x');
+                            if (toxEl) toxEl.innerText = el.value + 'px';
+                        }
+                        if (id === 'cfg-text-offset-y') {
+                            const toyEl = document.getElementById('val-text-offset-y');
+                            if (toyEl) toyEl.innerText = el.value + 'px';
+                        }
+                    }
+                }
+            });
+            initGiftConfigUI();
+            reflectConfigToPreview();
+        }
+
+        function initGiftConfigUI() {
+            const gift = state.giftInterrupt;
+            const rankMap = Object.fromEntries(gift.ranks.map(rank => [rank.id, rank]));
+            const enabledEl = document.getElementById('gift-enabled');
+            const triggerModeEl = document.getElementById('gift-trigger-mode');
+            const queueEl = document.getElementById('gift-queue-limit');
+            const lowEl = document.getElementById('gift-duration-low');
+            const midEl = document.getElementById('gift-duration-mid');
+            const highEl = document.getElementById('gift-duration-high');
+            if (!enabledEl || !triggerModeEl || !queueEl || !lowEl || !midEl || !highEl) return;
+
+            enabledEl.checked = gift.enabled;
+            triggerModeEl.value = gift.triggerMode || DEFAULT_GIFT_RULES.triggerMode;
+            queueEl.value = gift.queueLimit;
+            lowEl.value = rankMap.low?.durationSec ?? DEFAULT_GIFT_RULES.ranks[0].durationSec;
+            midEl.value = rankMap.mid?.durationSec ?? DEFAULT_GIFT_RULES.ranks[1].durationSec;
+            highEl.value = rankMap.high?.durationSec ?? DEFAULT_GIFT_RULES.ranks[2].durationSec;
+
+            [enabledEl, triggerModeEl, queueEl, lowEl, midEl, highEl].forEach(el => {
+                el.oninput = updateGiftRulesFromUI;
+                el.onchange = updateGiftRulesFromUI;
+            });
+        }
+
+        function updateGiftRulesFromUI() {
+            const enabledEl = document.getElementById('gift-enabled');
+            const triggerModeEl = document.getElementById('gift-trigger-mode');
+            const queueEl = document.getElementById('gift-queue-limit');
+            const lowEl = document.getElementById('gift-duration-low');
+            const midEl = document.getElementById('gift-duration-mid');
+            const highEl = document.getElementById('gift-duration-high');
+            if (!enabledEl || !triggerModeEl || !queueEl || !lowEl || !midEl || !highEl) return;
+
+            state.giftInterrupt.enabled = enabledEl.checked;
+            state.giftInterrupt.triggerMode = triggerModeEl.value === 'all' ? 'all' : DEFAULT_GIFT_RULES.triggerMode;
+            state.giftInterrupt.queueLimit = Math.max(1, parseInt(queueEl.value, 10) || DEFAULT_GIFT_RULES.queueLimit);
+            state.giftInterrupt.ranks = state.giftInterrupt.ranks.map(rank => {
+                if (rank.id === 'low') return { ...rank, durationSec: Math.max(1, parseInt(lowEl.value, 10) || rank.durationSec) };
+                if (rank.id === 'mid') return { ...rank, durationSec: Math.max(1, parseInt(midEl.value, 10) || rank.durationSec) };
+                if (rank.id === 'high') return { ...rank, durationSec: Math.max(1, parseInt(highEl.value, 10) || rank.durationSec) };
+                return rank;
+            });
+            saveGiftRules();
+            updateControllerUI();
+        }
+
+        function hexToRgba(hex, alphaPercent) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alphaPercent / 100})`;
+        }
+
+        function updateLiveConfig() {
+            const config = {
+                posX: parseInt(document.getElementById('cfg-pos-x').value),
+                framePreset: document.getElementById('cfg-framePreset').value,
+                frameScale: parseFloat(document.getElementById('cfg-frame-scale').value),
+                giftCardScale: parseFloat(document.getElementById('cfg-gift-card-scale').value),
+                textOffsetX: parseInt(document.getElementById('cfg-text-offset-x').value),
+                textOffsetY: parseInt(document.getElementById('cfg-text-offset-y').value),
+                font: document.getElementById('cfg-font').value,
+                color: document.getElementById('cfg-color').value,
+                colorAlpha: parseInt(document.getElementById('cfg-color-alpha').value),
+                bgBase: document.getElementById('cfg-bg-base').value,
+                bgAlpha: parseInt(document.getElementById('cfg-bg-alpha').value),
+                border: document.getElementById('cfg-border').value,
+                borderAlpha: parseInt(document.getElementById('cfg-border-alpha').value),
+                size: parseInt(document.getElementById('cfg-size').value),
+                posY: parseInt(document.getElementById('cfg-pos-y').value),
+                remoteId: document.getElementById('cfg-remote-id').value,
+                fullWidth: document.getElementById('cfg-fullWidth').checked,
+                outlineColor: document.getElementById('cfg-outline-color').value,
+                outlineWidth: parseInt(document.getElementById('cfg-outline-width').value),
+                outlineAlpha: parseInt(document.getElementById('cfg-outline-alpha').value)
+            };
+            state.presets[state.editingIndex].config = config;
+            reflectConfigToPreview();
+
+            // If editing active slot, send live config
+            if (state.editingIndex === state.activeIndex) {
+                bc.postMessage({ type: 'LIVE_CONFIG', payload: config });
+            }
+            // Send update slot msg
+            bc.postMessage({
+                type: 'UPDATE_SLOT',
+                payload: {
+                    slotIndex: state.editingIndex,
+                    data: state.presets[state.editingIndex].data,
+                    config: config
+                }
+            });
+        }
+
+        function applyConfigToElement(container, textEl, scale = 1) {
+            const cfg = state.config;
+
+            if (cfg.fullWidth) {
+                container.style.width = '100%';
+                container.style.left = '0%';
+                container.style.top = `${cfg.posY}%`;
+                container.style.transform = 'translateY(-50%)';
+
+                textEl.style.width = '100%';
+                textEl.style.borderRadius = '0px';
+                textEl.style.borderLeft = 'none';
+                textEl.style.borderRight = 'none';
+            } else {
+                container.style.width = '';
+                container.style.left = `${cfg.posX}%`;
+                container.style.top = `${cfg.posY}%`;
+                container.style.transform = 'translate(-50%, -50%)';
+
+                textEl.style.width = 'auto';
+                textEl.style.borderRadius = '8px';
+                textEl.style.borderLeft = '';
+                textEl.style.borderRight = '';
+            }
+
+            // テキスト基本スタイル
+            textEl.style.fontFamily = cfg.font;
+            textEl.style.color = hexToRgba(cfg.color, cfg.colorAlpha);
+            textEl.style.fontSize = `${cfg.size * scale}px`;
+            textEl.style.lineHeight = '1.2';
+            textEl.style.transform = `translate(${cfg.textOffsetX * scale}px, ${cfg.textOffsetY * scale}px)`;
+
+            if (cfg.font.includes('Noto Sans JP') || cfg.font.includes('Kaisei Tokumin')) {
+                textEl.style.fontWeight = '700';
+            } else {
+                textEl.style.fontWeight = 'normal';
+            }
+
+            // 背景と枠線
+            textEl.style.backgroundColor = hexToRgba(cfg.bgBase, cfg.bgAlpha);
+            textEl.style.borderColor = hexToRgba(cfg.border, cfg.borderAlpha);
+            textEl.style.borderWidth = (cfg.borderAlpha > 0) ? `${Math.max(1, Math.round(4 * scale))}px` : '0px';
+
+            // 文字縁取り (text-shadow)
+            if (cfg.outlineWidth > 0) {
+                const w = cfg.outlineWidth * scale;
+                const c = hexToRgba(cfg.outlineColor, cfg.outlineAlpha);
+                textEl.style.textShadow = `
+                    ${w}px ${w}px 0 ${c},
+                    -${w}px ${w}px 0 ${c},
+                    ${w}px -${w}px 0 ${c},
+                    -${w}px -${w}px 0 ${c},
+                    ${w}px 0px 0 ${c},
+                    -${w}px 0px 0 ${c},
+                    0px ${w}px 0 ${c},
+                    0px -${w}px 0 ${c}
+                `;
+            } else {
+                textEl.style.textShadow = 'none';
+            }
+
+            // フレーム画像（preview / display 両方対応）
+            const frameEl =
+                (container.id === 'obs-telop') ? document.getElementById('obs-frame') :
+                    (container.id === 'preview-telop') ? document.getElementById('preview-frame') :
+                        null;
+
+            const preset = FRAME_PRESETS[cfg.framePreset] || FRAME_PRESETS.news;
+
+            if (frameEl && preset.src) {
+                frameEl.style.display = '';
+                frameEl.onerror = () => { frameEl.style.display = 'none'; };
+                frameEl.src = preset.src;
+
+                // フレームサイズ：基準サイズをスケール倍
+                const baseW = 1920;
+                const targetPx = Math.round(baseW * cfg.frameScale * scale);
+                frameEl.style.width = `${targetPx}px`;
+            } else if (frameEl) {
+                frameEl.style.display = 'none';
+            }
+        }
+
+        function reflectConfigToPreview() {
+            const p = document.getElementById('preview-telop');
+            const pt = document.getElementById('preview-text');
+            const cfg = state.presets[state.editingIndex].config;
+
+            // Temporarily swap config for applyConfigToElement to work correctly if it uses state.config
+            const originalActiveIdx = state.activeIndex;
+            state.activeIndex = state.editingIndex;
+            applyConfigToElement(p, pt, 0.5);
+            state.activeIndex = originalActiveIdx;
+
+            pt.innerText = state.presets[state.editingIndex].data[0] || "プレビューテキスト";
+        }
+
+        function saveConfig() {
+            saveToStorage('vt_telop_presets', state.presets);
+            saveGiftRules();
+            const btn = document.getElementById('cfg-save-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "✓ プリセット" + (state.editingIndex + 1) + " 保存完了";
+            btn.classList.replace('bg-indigo-600', 'bg-green-600');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.replace('bg-green-600', 'bg-indigo-600');
+            }, 2000);
+        }
+
+        function toggleResetBtn() {
+            const lock = document.getElementById('cfg-reset-lock');
+            const btn = document.getElementById('cfg-reset-btn');
+            btn.disabled = !lock.checked;
+        }
+
+        function resetConfig() {
+            state.presets[state.editingIndex].config = { ...DEFAULT_CONFIG };
+            saveToStorage('vt_telop_presets', state.presets);
+            bc.postMessage({
+                type: 'UPDATE_SLOT',
+                payload: {
+                    slotIndex: state.editingIndex,
+                    data: state.presets[state.editingIndex].data,
+                    config: state.presets[state.editingIndex].config
+                }
+            });
+            if (state.editingIndex === state.activeIndex) {
+                bc.postMessage({ type: 'LIVE_CONFIG', payload: state.presets[state.editingIndex].config });
+            }
+            initConfigUI();
+            updateLiveConfig();
+
+            const btn = document.getElementById('cfg-reset-btn');
+            btn.innerText = "初期化しました";
+            setTimeout(() => {
+                btn.innerText = "すべての表示設定を初期化";
+                document.getElementById('cfg-reset-lock').checked = false;
+                toggleResetBtn();
+            }, 2000);
+        }
+
+        function renderControllerList() {
+            const listEl = document.getElementById('ctrl-list');
+            if (!listEl) return;
+            const data = state.presets[state.activeIndex].data;
+            listEl.innerHTML = '';
+            data.forEach((text, i) => {
+                const div = document.createElement('div');
+                div.className = `p-3 mb-2 rounded-lg cursor-pointer border-2 transition-all flex items-center gap-3 ${i === state.index ? 'border-indigo-500 bg-indigo-50 shadow-inner' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`;
+                div.onclick = () => jumpToIndex(i);
+                div.innerHTML = `<div class="w-6 h-6 rounded-full border flex items-center justify-center font-bold text-xs ${i === state.index ? 'bg-indigo-500 text-white' : 'bg-white text-gray-400'}">${i + 1}</div><div class="font-bold truncate ${i === state.index ? 'text-indigo-900' : 'text-gray-600'}">${text}</div>`;
+                listEl.appendChild(div);
+            });
+        }
+
+        function updateControllerUI() {
+            const data = state.presets[state.activeIndex].data;
+            const currentTextEl = document.getElementById('ctrl-current-text');
+            const displayPayload = getDisplayPayload();
+            if (currentTextEl) currentTextEl.innerText = getControllerDisplayText(displayPayload) || "待機中...";
+
+            const progressEl = document.getElementById('ctrl-progress');
+            if (progressEl) progressEl.innerText = `${data.length > 0 ? state.index + 1 : 0} / ${data.length}`;
+
+            const btn = document.getElementById('ctrl-toggle-btn');
+            if (btn) {
+                btn.innerText = state.visible ? 'ON' : 'OFF';
+                btn.className = state.visible ? 'bg-green-500 text-white px-6 py-2 rounded-md font-bold btn-transition shadow-sm' : 'bg-gray-400 text-white px-6 py-2 rounded-md font-bold btn-transition shadow-sm';
+            }
+
+            const interruptBadge = document.getElementById('ctrl-interrupt-badge');
+            const interruptStatus = document.getElementById('ctrl-interrupt-status');
+            if (interruptBadge && interruptStatus) {
+                const queueLength = state.giftInterrupt.queue.length;
+                const currentGift = state.giftInterrupt.current;
+                interruptBadge.classList.toggle('hidden', !currentGift && queueLength === 0);
+                interruptBadge.innerText = `Gift Queue ${queueLength}`;
+                if (currentGift) {
+                    interruptStatus.innerText = `${currentGift.author || 'Anonymous'} のギフトを表示中`;
+                } else if (queueLength > 0) {
+                    interruptStatus.innerText = `ギフト待機 ${queueLength} 件`;
+                } else {
+                    interruptStatus.innerText = '通常表示';
+                }
+            }
+
+            // Update slot buttons
+            for (let i = 0; i < 3; i++) {
+                const sBtn = document.getElementById(`ctrl-slot-${i}`);
+                if (sBtn) {
+                    if (state.activeIndex === i) {
+                        sBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold border transition-all bg-indigo-600 text-white border-indigo-600";
+                    } else {
+                        sBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold border transition-all bg-white text-gray-400 border-gray-200";
+                    }
+                }
+            }
+
+            syncAutoRotateControls();
+            renderControllerList();
+        }
+
+        function syncAutoRotateControls() {
+            const secondsEl = document.getElementById('ctrl-auto-seconds');
+            const loopEl = document.getElementById('ctrl-auto-loop');
+            const btnEl = document.getElementById('ctrl-auto-btn');
+            const statusEl = document.getElementById('ctrl-auto-status');
+            const summaryEl = document.getElementById('ctrl-auto-summary');
+            if (secondsEl) secondsEl.value = state.autoRotate.intervalSec;
+            if (loopEl) loopEl.checked = state.autoRotate.loop;
+            if (btnEl) {
+                btnEl.innerText = state.autoRotate.enabled ? 'AUTO ON' : 'AUTO OFF';
+                btnEl.className = state.autoRotate.enabled
+                    ? 'bg-emerald-500 text-white px-5 py-2 rounded-md font-bold btn-transition shadow-sm'
+                    : 'bg-orange-500 text-white px-5 py-2 rounded-md font-bold btn-transition shadow-sm';
+            }
+            if (statusEl) {
+                const hasItems = state.data.length > 1;
+                if (!state.autoRotate.enabled) {
+                    statusEl.innerText = '自動送りは停止中です';
+                } else if (!hasItems) {
+                    statusEl.innerText = '項目が1件以下のため自動送り待機中です';
+                } else {
+                    statusEl.innerText = `${state.autoRotate.intervalSec}秒ごとに${state.autoRotate.loop ? 'ループあり' : '最後で停止'}で自動送り中`;
+                }
+            }
+            if (summaryEl) {
+                summaryEl.innerText = state.autoRotate.enabled
+                    ? `現在は ${state.autoRotate.intervalSec} 秒ごとの自動送りです。${state.autoRotate.loop ? 'ループあり。' : '最後で停止。'}`
+                    : 'お知らせや箇条書きを一定時間ごとに自動で切り替えます。';
+            }
+            syncAutoRotatePanel();
+        }
+
+        function clearAutoRotateTimer() {
+            if (autoRotateTimer) {
+                clearTimeout(autoRotateTimer);
+                autoRotateTimer = null;
+            }
+        }
+
+        function getNextAutoRotateIndex() {
+            const data = state.data;
+            if (data.length <= 1) return null;
+            const nextIndex = state.index + 1;
+            if (nextIndex < data.length) return nextIndex;
+            if (state.autoRotate.loop) return 0;
+            return null;
+        }
+
+        function restartAutoRotateIfNeeded() {
+            clearAutoRotateTimer();
+            syncAutoRotateControls();
+            if (!state.autoRotate.enabled) return;
+            if (state.data.length <= 1) return;
+
+            autoRotateTimer = setTimeout(() => {
+                const nextIndex = getNextAutoRotateIndex();
+                if (nextIndex === null) {
+                    state.autoRotate.enabled = false;
+                    saveAutoRotateSettings();
+                    syncAutoRotateControls();
+                    return;
+                }
+                jumpToIndex(nextIndex, { restartAutoRotate: false });
+                restartAutoRotateIfNeeded();
+            }, state.autoRotate.intervalSec * 1000);
+        }
+
+        function applyAutoRotateOptionsFromUI() {
+            const secondsEl = document.getElementById('ctrl-auto-seconds');
+            const loopEl = document.getElementById('ctrl-auto-loop');
+            if (secondsEl) {
+                const parsed = Math.max(1, Math.min(600, parseInt(secondsEl.value, 10) || 8));
+                state.autoRotate.intervalSec = parsed;
+                secondsEl.value = parsed;
+            }
+            if (loopEl) state.autoRotate.loop = loopEl.checked;
+            saveAutoRotateSettings();
+            syncAutoRotateControls();
+            if (state.autoRotate.enabled) restartAutoRotateIfNeeded();
+        }
+
+        function toggleAutoRotate(forceValue = null) {
+            applyAutoRotateOptionsFromUI();
+            state.autoRotate.enabled = typeof forceValue === 'boolean' ? forceValue : !state.autoRotate.enabled;
+            saveAutoRotateSettings();
+            restartAutoRotateIfNeeded();
+        }
+
+        function activateSlot(idx) {
+            state.activeIndex = idx;
+            state.index = 0;
+            saveToStorage('vt_telop_active_slot', state.activeIndex);
+            saveToStorage('vt_telop_index', state.index);
+            bc.postMessage({ type: 'SWITCH_ACTIVE_SLOT', payload: idx });
+            updateControllerUI();
+            restartAutoRotateIfNeeded();
+            if (isVisible('display')) {
+                applyConfigToElement(document.getElementById('obs-telop'), document.getElementById('obs-text'));
+                updateDisplayUI();
+            }
+        }
+
+        function jumpToIndex(idx, options = {}) {
+            const { restartAutoRotate = true } = options;
+            if (idx < 0 || idx >= state.data.length) return;
+            state.index = idx;
+            saveToStorage('vt_telop_index', state.index);
+            bc.postMessage({ type: 'UPDATE_INDEX', payload: state.index });
+            updateControllerUI();
+            if (isVisible('display')) updateDisplayUI();
+            if (restartAutoRotate) restartAutoRotateIfNeeded();
+        }
+
+        function changeIndex(delta) { jumpToIndex(state.index + delta); }
+
+        function toggleVisibility() {
+            state.visible = !state.visible;
+            saveToStorage('vt_telop_visible', state.visible);
+            bc.postMessage({ type: 'TOGGLE_VISIBILITY', payload: state.visible });
+            updateControllerUI();
+            if (state.visible) {
+                playNextGiftInterruptIfIdle();
+                if (isVisible('display')) updateDisplayUI();
+            }
+        }
+
+        function updateDisplayUI() {
+            const payload = getDisplayPayload();
+            applyDisplayMode(payload);
+        }
+
+        function stripHtml(html) {
+            const source = String(html || '');
+            if (!source) return '';
+            const doc = new DOMParser().parseFromString(source, 'text/html');
+            return String(doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+        }
+
+        function parseAmountValue(value) {
+            if (typeof value === 'number' && Number.isFinite(value)) return value;
+            if (!value) return 0;
+            if (typeof value === 'object') {
+                if (typeof value.amount === 'number') return value.amount;
+                if (typeof value.value === 'number') return value.value;
+                if (typeof value.price === 'number') return value.price;
+            }
+            const normalized = String(value).replace(/,/g, '');
+            const match = normalized.match(/-?\d+(?:\.\d+)?/);
+            return match ? Number(match[0]) : 0;
+        }
+
+        function normalizeCurrencyCode(value) {
+            const source = String(value || '').trim().toUpperCase();
+            if (!source) return '';
+            if (source === '$') return 'USD';
+            if (source === '¥' || source === 'JPY') return 'JPY';
+            if (source === 'NT$' || source === 'NTD') return 'TWD';
+            return source.replace(/[^A-Z$¥]/g, '');
+        }
+
+        function inferCurrencyFromText(value) {
+            const source = String(value || '').trim().toUpperCase();
+            if (!source) return '';
+            if (/(NT\$|TWD|NTD)/.test(source)) return 'TWD';
+            if (/(US\$|USD)/.test(source)) return 'USD';
+            if (/(HK\$|HKD)/.test(source)) return 'HKD';
+            if (/(A\$|AUD)/.test(source)) return 'AUD';
+            if (/(C\$|CAD)/.test(source)) return 'CAD';
+            if (/(SGD|S\$)/.test(source)) return 'SGD';
+            if (/(EUR|€)/.test(source)) return 'EUR';
+            if (/(GBP|£)/.test(source)) return 'GBP';
+            if (/(KRW|₩)/.test(source)) return 'KRW';
+            if (/(JPY|¥|円)/.test(source)) return 'JPY';
+            if (/\$/.test(source)) return 'USD';
+            return '';
+        }
+
+        function resolveGiftCurrency(rawComment, data) {
+            const explicit = normalizeCurrencyCode(
+                data?.currency
+                || data?.money?.currency
+                || rawComment?.currency
+                || rawComment?.money?.currency
+            );
+            if (explicit) return explicit;
+            const inferred = inferCurrencyFromText(
+                data?.paidText
+                || data?.priceText
+                || data?.price
+                || rawComment?.paidText
+                || rawComment?.price
+            );
+            return inferred;
+        }
+
+        function toGiftRankAmount(amount, currency) {
+            const numericAmount = Number(amount || 0);
+            if (!(numericAmount > 0)) return 0;
+            const normalizedCurrency = normalizeCurrencyCode(currency);
+            const rate = GIFT_CURRENCY_TO_JPY_RATE[normalizedCurrency];
+            if (!rate) return numericAmount;
+            return numericAmount * rate;
+        }
+
+        function escapeRegExp(value) {
+            return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function stripTrailingPaidText(text, paidText) {
+            const source = String(text || '');
+            const paid = String(paidText || '').trim();
+            if (!source || !paid) return source;
+            const compactPaid = paid.replace(/\s+/g, '\\s*');
+            const pattern = new RegExp(`(?:\\s|[\\u00A0\\n\\r])*(?:[・/|｜-]\\s*)?${compactPaid}\\s*$`, 'i');
+            return source.replace(pattern, '').trim();
+        }
+
+        function stripTrailingPaidTextFromParts(parts, paidText) {
+            if (!Array.isArray(parts) || parts.length === 0 || !paidText) return Array.isArray(parts) ? parts : [];
+            const cloned = parts.map(part => ({ ...part }));
+            let remaining = String(paidText || '').trim();
+
+            while (remaining && cloned.length > 0) {
+                const last = cloned[cloned.length - 1];
+                if (!last) break;
+
+                if (last.type === 'emoji') {
+                    break;
+                }
+
+                const content = String(last.content || '');
+                const trimmedEnd = content.replace(/\s+$/, '');
+                if (!trimmedEnd) {
+                    cloned.pop();
+                    continue;
+                }
+
+                if (trimmedEnd.endsWith(remaining)) {
+                    const nextContent = trimmedEnd.slice(0, trimmedEnd.length - remaining.length).replace(/\s+$/, '');
+                    if (nextContent) {
+                        last.content = nextContent;
+                    } else {
+                        cloned.pop();
+                    }
+                    remaining = '';
+                    break;
+                }
+
+                const partialLength = Math.min(trimmedEnd.length, remaining.length);
+                const remainingTail = remaining.slice(-partialLength);
+                if (trimmedEnd === remainingTail) {
+                    cloned.pop();
+                    remaining = remaining.slice(0, remaining.length - partialLength).trimEnd();
+                    continue;
+                }
+
+                break;
+            }
+
+            while (cloned.length > 0 && cloned[cloned.length - 1]?.type === 'text' && !String(cloned[cloned.length - 1].content || '').trim()) {
+                cloned.pop();
+            }
+
+            return cloned;
+        }
+
+        function extractGiftAmount(rawComment) {
+            const raw = rawComment || {};
+            const data = raw?.data || raw?.payload?.data || raw?.payload || raw;
+            const candidates = [
+                data?.price,
+                data?.paidAmount,
+                data?.amount,
+                data?.money,
+                raw?.price,
+                raw?.payload?.price,
+                data?.paidText
+            ];
+            for (const candidate of candidates) {
+                const amount = parseAmountValue(candidate);
+                if (amount > 0) return amount;
+            }
+            return 0;
+        }
+
+        function normalizeOnecommeEvent(rawComment) {
+            const raw = rawComment || {};
+            const data = raw?.data || raw?.payload?.data || raw?.payload || raw;
+            const parsed = window.VCT && typeof window.VCT.parse === 'function'
+                ? window.VCT.parse(rawComment)
+                : null;
+            const paidText = String(data?.paidText || '').trim();
+            let text = parsed?.text || stripHtml(data?.comment ?? data?.text ?? data?.message ?? data?.body ?? '');
+            let parts = Array.isArray(parsed?.parts) ? parsed.parts : [];
+            text = stripTrailingPaidText(text, paidText);
+            parts = stripTrailingPaidTextFromParts(parts, paidText);
+            if (!text && data?.membership) {
+                text = [data.membership.primary, data.membership.sub].filter(Boolean).join(' ');
+            }
+            const amount = extractGiftAmount(rawComment);
+            const currency = resolveGiftCurrency(raw, data);
+            const type = (parsed?.hasGift || data?.hasGift || amount > 0 || data?.membership) ? 'gift' : 'comment';
+            return {
+                type,
+                author: parsed?.user || data?.displayName || data?.name || raw?.name || 'Anonymous',
+                text,
+                parts,
+                amount,
+                rankAmount: toGiftRankAmount(amount, currency),
+                giftName: data?.giftType || data?.membership?.primary || '',
+                memberTier: data?.membership?.sub || '',
+                timestamp: data?.timestamp || Date.now(),
+                currency,
+                paidText,
+                command: parsed?.vctCommand || null,
+                parsed,
+                raw: rawComment
+            };
+        }
+
+        function resolveGiftRank(amount) {
+            const sorted = [...state.giftInterrupt.ranks].sort((a, b) => a.minAmount - b.minAmount);
+            let active = sorted[0] || DEFAULT_GIFT_RULES.ranks[0];
+            sorted.forEach(rank => {
+                if (amount >= rank.minAmount) active = rank;
+            });
+            return active;
+        }
+
+        function formatGiftAmount(event) {
+            const amount = Number(event?.amount || 0);
+            if (amount <= 0) return '';
+            return event.currency ? `${amount.toLocaleString()} ${event.currency}` : amount.toLocaleString();
+        }
+
+        function truncateText(text, maxChars) {
+            const source = String(text || '').trim();
+            if (!source) return '';
+            if (source.length <= maxChars) return source;
+            return source.slice(0, maxChars) + '…';
+        }
+
+        function normalizeCommandName(name) {
+            return String(name || '').trim().toLowerCase();
+        }
+
+        function resolveGiftHeaderPreset(commandName) {
+            const normalized = normalizeCommandName(commandName);
+            if (normalized === 'sponsor' || normalized === 'スポンサー') {
+                return 'sponsor';
+            }
+            return 'jack';
+        }
+
+        function isGiftJackCommand(command) {
+            if (!command?.exists) return false;
+
+            const rawName = String(command.name || '').trim();
+            if (!rawName) return false;
+
+            return GIFT_JACK_COMMANDS.has(rawName) || GIFT_JACK_COMMANDS.has(normalizeCommandName(rawName));
+        }
+
+        function shouldTriggerGiftInterrupt(event) {
+            if (!state.giftInterrupt.enabled || event.type !== 'gift') return false;
+            if (state.giftInterrupt.triggerMode === 'all') return true;
+            return isGiftJackCommand(event.command);
+        }
+
+        function resolveGiftBodyText(event) {
+            const commandBody = stripTrailingPaidText(String(event?.command?.body || '').trim(), event?.paidText || '');
+            return commandBody || event?.text || event?.paidText || event?.giftName || 'ギフトを送信しました';
+        }
+
+        function resolveGiftHeaderLabel(preset) {
+            switch (preset) {
+                case 'sponsor':
+                    return 'SPONSORED';
+                case 'system':
+                    return 'SUPPORT ACTIVE';
+                case 'jack':
+                default:
+                    return 'TELOP JACK';
+            }
+        }
+
+        function buildGiftDisplayPayload(event) {
+            const headerPreset = resolveGiftHeaderPreset(event?.command?.name);
+            const userText = truncateText(event?.author || 'Anonymous', 18);
+            const amountText = formatGiftAmount(event);
+            const bodySource = resolveGiftBodyText(event);
+            const commandBody = stripTrailingPaidText(String(event?.command?.body || '').trim(), event?.paidText || '');
+            const bodyParts = commandBody
+                ? [{ type: 'text', content: bodySource }]
+                : (Array.isArray(event?.parts) ? event.parts : []);
+            return {
+                mode: 'gift',
+                visible: true,
+                headerPreset,
+                headerLabel: resolveGiftHeaderLabel(headerPreset),
+                headerUserText: userText,
+                headerAmountText: amountText,
+                bodyText: truncateText(bodySource, 40),
+                bodyParts,
+                amountText,
+                userText,
+                text: amountText ? `【GIFT】${userText} / ${amountText}` : `【GIFT】${userText}`,
+                rawEvent: event
+            };
+        }
+
+        function enqueueGiftInterrupt(event) {
+            if (!shouldTriggerGiftInterrupt(event)) return;
+            if (state.giftInterrupt.queue.length >= state.giftInterrupt.queueLimit) return;
+
+            const rank = resolveGiftRank(event.rankAmount || event.amount);
+            state.giftInterrupt.queue.push({
+                ...buildGiftDisplayPayload(event),
+                rankId: rank.id,
+                durationSec: rank.durationSec
+            });
+            updateControllerUI();
+            playNextGiftInterruptIfIdle();
+        }
+
+        function clearGiftInterruptTimer() {
+            if (state.giftInterrupt.timerId) {
+                clearTimeout(state.giftInterrupt.timerId);
+                state.giftInterrupt.timerId = null;
+            }
+        }
+
+        function playNextGiftInterruptIfIdle() {
+            if (!state.visible) return;
+            if (state.giftInterrupt.current || state.giftInterrupt.queue.length === 0) return;
+
+            state.giftInterrupt.current = state.giftInterrupt.queue.shift();
+            state.giftInterrupt.expiresAt = Date.now() + (state.giftInterrupt.current.durationSec * 1000);
+            clearGiftInterruptTimer();
+            saveGiftRuntimeState();
+            updateControllerUI();
+            if (isVisible('display')) updateDisplayUI();
+
+            state.giftInterrupt.timerId = setTimeout(() => {
+                finishGiftInterrupt();
+            }, state.giftInterrupt.current.durationSec * 1000);
+        }
+
+        function finishGiftInterrupt() {
+            clearGiftInterruptTimer();
+            state.giftInterrupt.current = null;
+            state.giftInterrupt.expiresAt = 0;
+            saveGiftRuntimeState();
+            clearGiftRuntimeStorage();
+            updateControllerUI();
+            if (isVisible('display')) updateDisplayUI();
+            playNextGiftInterruptIfIdle();
+        }
+
+        function getDisplayPayload() {
+            if (!state.visible) return { visible: false, text: '', mode: 'hidden' };
+            if (state.giftInterrupt.current) {
+                return state.giftInterrupt.current;
+            }
+
+            const normalText = state.data[state.index] || '';
+            return {
+                visible: !!normalText,
+                text: normalText,
+                mode: 'normal'
+            };
+        }
+
+        function getControllerDisplayText(payload) {
+            if (!payload?.visible) return '';
+            if (payload.mode === 'gift') {
+                return [payload.headerLabel, payload.headerUserText, payload.headerAmountText, payload.bodyText].filter(Boolean).join(' ');
+            }
+            return payload.text || '';
+        }
+
+        function getGiftCardMetrics() {
+            const cfg = state.config;
+            const frameScale = Number(cfg.frameScale || 1);
+            const giftCardScale = Number(cfg.giftCardScale || DEFAULT_CONFIG.giftCardScale || 0.86);
+            const baseWidth = GIFT_BASE_FRAME_WIDTH * frameScale;
+            const baseHeight = GIFT_BASE_FRAME_HEIGHT * frameScale;
+            return {
+                leftPercent: Number(cfg.posX || 50),
+                topPercent: Number(cfg.posY || 90),
+                widthPx: Math.min(baseWidth * giftCardScale, window.innerWidth * 0.95),
+                minHeightPx: Math.max(150, baseHeight * Math.max(0.72, giftCardScale * 0.95)),
+                paddingX: Math.max(28, Math.round(baseWidth * Math.max(0.014, giftCardScale * 0.02))),
+                paddingY: Math.max(22, Math.round(baseHeight * Math.max(0.07, giftCardScale * 0.09)))
+            };
+        }
+
+        function normalizeGiftBodyParts(payload) {
+            const parts = Array.isArray(payload?.bodyParts) ? payload.bodyParts : [];
+            if (parts.length === 0) return [];
+            return parts.filter(part => {
+                if (!part || !part.type) return false;
+                if (part.type === 'text') return String(part.content || '').length > 0;
+                if (part.type === 'emoji') return !!part.url;
+                return false;
+            });
+        }
+
+        function renderGiftBodyContent(bodyEl, payload) {
+            if (!bodyEl) return;
+            const parts = normalizeGiftBodyParts(payload);
+            bodyEl.replaceChildren();
+            if (parts.length === 0) {
+                bodyEl.innerText = payload.bodyText || '';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            parts.forEach(part => {
+                if (part.type === 'text') {
+                    const span = document.createElement('span');
+                    span.className = 'gift-part-text';
+                    span.textContent = part.content || '';
+                    fragment.appendChild(span);
+                    return;
+                }
+                if (part.type === 'emoji' && part.url) {
+                    const img = document.createElement('img');
+                    img.className = `gift-part-emoji${part.isSticker ? ' gift-part-sticker' : ''}`;
+                    img.src = part.url;
+                    img.alt = part.alt || '';
+                    img.loading = 'eager';
+                    img.decoding = 'async';
+                    fragment.appendChild(img);
+                }
+            });
+            bodyEl.appendChild(fragment);
+        }
+
+        function applyGiftCardLayout() {
+            const card = document.getElementById('obs-gift-card');
+            if (!card) return;
+            const metrics = getGiftCardMetrics();
+            card.style.left = `${metrics.leftPercent}%`;
+            card.style.top = `${metrics.topPercent}%`;
+            card.style.width = `${metrics.widthPx}px`;
+            card.style.minHeight = `${metrics.minHeightPx}px`;
+            card.style.padding = `${metrics.paddingY}px ${metrics.paddingX}px`;
+        }
+
+        function renderNormalTelop(payload) {
+            const container = document.getElementById('obs-telop');
+            const textEl = document.getElementById('obs-text');
+            if (!container || !textEl) return;
+
+            if (!payload.visible || !payload.text) {
+                container.classList.add('hidden-telop');
+                return;
+            }
+
+            const newText = payload.text;
+            if (textEl.innerText === newText && !container.classList.contains('hidden-telop')) {
+                return;
+            }
+
+            textEl.style.opacity = 0;
+            setTimeout(() => {
+                textEl.innerText = newText;
+                textEl.style.opacity = 1;
+                container.classList.remove('hidden-telop');
+            }, 250);
+        }
+
+        function renderGiftCard(payload) {
+            const cardEl = document.getElementById('obs-gift-card');
+            const labelEl = document.getElementById('obs-gift-label');
+            const userEl = document.getElementById('obs-gift-user');
+            const amountEl = document.getElementById('obs-gift-amount');
+            const bodyEl = document.getElementById('obs-gift-body');
+            if (!labelEl || !userEl || !amountEl || !bodyEl || !cardEl) return;
+
+            applyGiftCardLayout();
+            cardEl.classList.remove('rank-low', 'rank-mid', 'rank-high');
+            cardEl.classList.add(`rank-${payload.rankId || 'low'}`);
+            labelEl.innerText = payload.headerLabel || '';
+            userEl.innerText = payload.headerUserText || '';
+            amountEl.innerText = payload.headerAmountText || '';
+            amountEl.style.display = payload.headerAmountText ? '' : 'none';
+            renderGiftBodyContent(bodyEl, payload);
+        }
+
+        function applyDisplayMode(payload) {
+            const telopEl = document.getElementById('obs-telop');
+            const cardEl = document.getElementById('obs-gift-card');
+            if (!telopEl || !cardEl) return;
+
+            if (!payload.visible) {
+                telopEl.classList.add('hidden-telop');
+                telopEl.classList.remove('telop-hidden-for-gift');
+                cardEl.classList.add('hidden');
+                return;
+            }
+
+            if (payload.mode === 'gift') {
+                renderGiftCard(payload);
+                telopEl.classList.remove('hidden-telop');
+                telopEl.classList.add('telop-hidden-for-gift');
+                cardEl.classList.remove('hidden');
+                return;
+            }
+
+            telopEl.classList.remove('telop-hidden-for-gift');
+            cardEl.classList.add('hidden');
+            renderNormalTelop(payload);
+        }
+
+        function initOneCommeAdapter() {
+            if (oneCommeReady || !window.OneSDK || typeof OneSDK.ready !== 'function') return;
+            oneCommeReady = true;
+
+            OneSDK.ready().then(() => {
+                const setupOptions = { mode: 'diff' };
+                if (OneSDK.usePermission && OneSDK.PERM?.COMMENT) {
+                    setupOptions.permissions = OneSDK.usePermission([OneSDK.PERM.COMMENT]);
+                }
+                OneSDK.setup(setupOptions);
+                OneSDK.subscribe({
+                    action: 'comments',
+                    callback: (comments) => {
+                        if (!Array.isArray(comments)) return;
+                        comments.forEach(rawComment => {
+                            const normalized = normalizeOnecommeEvent(rawComment);
+                            if (normalized.type === 'gift') {
+                                enqueueGiftInterrupt(normalized);
+                            }
+                        });
+                    }
+                });
+                OneSDK.connect();
+            }).catch((err) => {
+                console.warn('[VTelop] OneSDK init failed', err);
+            });
+        }
+
+        window.onload = init;
+
+        // キーボードショートカット
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') || (e.key === 'Escape' && document.body.classList.contains('mode-display'))) {
+                e.preventDefault();
+                if (document.body.classList.contains('mode-display')) {
+                    exitDisplayMode();
+                } else {
+                    enterDisplayMode();
+                }
+                return;
+            }
+            if (!isVisible('controller') && !isVisible('display')) return;
+            // 入力中（input/textareaにフォーカスがある時）はホットキーを無効化
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch (e.key.toLowerCase()) {
+                case 'n':
+                case 'arrowright':
+                case ' ':
+                    e.preventDefault(); // スペースキーなどでのスクロールを防止
+                    changeIndex(1);
+                    break;
+
+                case 'p':
+                case 'arrowleft':
+                    e.preventDefault();
+                    changeIndex(-1);
+                    break;
+
+                case 'v':
+                    e.preventDefault();
+                    toggleVisibility();
+                    break;
+                case 'a':
+                    e.preventDefault();
+                    toggleAutoRotate();
+                    break;
+
+                // テンキーおよび記号キーでの操作追加
+                case '+':
+                    e.preventDefault();
+                    changeIndex(1);
+                    break;
+                case '-':
+                    e.preventDefault();
+                    changeIndex(-1);
+                    break;
+                case '*':
+                    e.preventDefault();
+                    toggleVisibility();
+                    break;
+
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                    // 数字キー。jumpToIndexを利用することでlocalStorage保存などを一括で行う
+                    const num = parseInt(e.key, 10);
+                    const idx = num === 0 ? 9 : num - 1; // 0キーは10番目とする
+                    jumpToIndex(idx);
+                    break;
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'ctrl-auto-seconds' || e.target.id === 'ctrl-auto-loop') {
+                applyAutoRotateOptionsFromUI();
+            }
+        });
+    </script>
+</body>
+
+</html>

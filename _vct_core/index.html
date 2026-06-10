@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCT Core</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>VCT Core</h1>
+        <p class="subtitle">VCT common data runtime</p>
+      </div>
+      <div id="core-enabled" class="badge">starting</div>
+    </header>
+
+    <section class="grid" aria-label="VCT Core status">
+      <article class="panel">
+        <h2>Runtime</h2>
+        <div class="rows">
+          <div class="row">
+            <div class="key">Core</div>
+            <div id="status-core" class="value">waiting</div>
+          </div>
+          <div class="row">
+            <div class="key">OneSDK</div>
+            <div id="status-onesdk" class="value">waiting</div>
+          </div>
+          <div class="row">
+            <div class="key">Last Comment</div>
+            <div id="status-last-comment" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Stream ID</div>
+            <div id="status-stream-id" class="value">-</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Database</h2>
+        <div class="rows">
+          <div class="row">
+            <div class="key">DB</div>
+            <div id="status-db" class="value">waiting</div>
+          </div>
+          <div class="row">
+            <div class="key">DB Version</div>
+            <div id="status-db-version" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Migration</div>
+            <div id="status-migration" class="value">waiting</div>
+          </div>
+          <div class="row">
+            <div class="key">Users Total</div>
+            <div id="status-users-total" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Supports Total</div>
+            <div id="status-supports-total" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Users Saved</div>
+            <div id="status-users-count" class="value">0</div>
+          </div>
+          <div class="row">
+            <div class="key">Supports Saved</div>
+            <div id="status-supports-count" class="value">0</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Last Save</h2>
+        <div class="rows">
+          <div class="row">
+            <div class="key">User</div>
+            <div id="status-last-user" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Support</div>
+            <div id="status-last-support" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Mode</div>
+            <div id="status-mode" class="value">-</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Control</h2>
+        <div class="actions">
+          <button id="control-refresh" type="button">状態再読込</button>
+          <button id="control-clear-stream-supports" class="danger" type="button">このStreamの supports を削除</button>
+          <button id="control-clear-all-supports" class="danger" type="button">supports を全削除</button>
+          <button id="control-clear-all-users" class="danger" type="button">users を全削除</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Config</h2>
+        <div class="rows">
+          <div class="row">
+            <div class="key">Save Users</div>
+            <div id="status-save-users" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Save Supports</div>
+            <div id="status-save-supports" class="value">-</div>
+          </div>
+          <div class="row">
+            <div class="key">Debug</div>
+            <div id="status-debug" class="value">-</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel panel--wide">
+        <h2>Log</h2>
+        <pre id="status-log"></pre>
+      </article>
+    </section>
+  </main>
+
+  <div id="danger-overlay" class="danger-overlay" aria-hidden="true">
+    <div class="danger-panel" role="dialog" aria-modal="true" aria-labelledby="danger-title">
+      <div class="danger-head">
+        <div>
+          <h2 id="danger-title">危険な操作</h2>
+          <p id="danger-subtitle">この操作は元に戻せません。</p>
+        </div>
+        <button id="danger-close" class="danger-close" type="button">閉じる</button>
+      </div>
+      <div class="danger-body">
+        <p id="danger-message" class="danger-message">削除対象を確認してください。</p>
+        <label class="danger-unlock">
+          <input id="danger-unlock" type="checkbox">
+          内容を確認し、削除を実行できるようにする
+        </label>
+        <div class="danger-actions">
+          <button id="danger-cancel" type="button">キャンセル</button>
+          <button id="danger-confirm-button" class="danger" type="button" disabled>削除を実行</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- わんコメ必須 -->
+  <script src="../__origin/js/onesdk.js"></script>
+
+  <!-- VCT ライブラリ  -->
+  <script src="./lib/idb/idb.min.js"></script>
+  <script src="./js/vct_one_core.js"></script>
+  <script src="./js/vct_idb_core.js"></script>
+  <script src="./js/vct_idb_common.js"></script>
+  <script src="./js/vct_idb.js"></script>
+  <script src="./config.js"></script>
+  <script src="./js/vct_logger.js"></script>
+  <script src="./js/vct_runtime.js"></script>
+  <script src="./js/vct_ui.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>

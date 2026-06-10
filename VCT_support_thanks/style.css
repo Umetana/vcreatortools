@@ -1,0 +1,73 @@
+/**
+ * VCT Support Thanks: Premium Styles
+ */
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    background: transparent; /* 重要: OBSで透過させるため */
+}
+
+.vct-thanks-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    perspective: 1000px; /* 3D感用 */
+}
+
+/* アイコンの共通スタイル */
+.falling-icon {
+    position: absolute;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    will-change: transform, opacity;
+    
+    /* 基本の光沢 */
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+}
+
+/* オーラとパルスのリッチな表現 */
+@keyframes aura-pulse {
+    0% { 
+        filter: drop-shadow(0 0 8px var(--aura-color)) brightness(1); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 18px var(--aura-color)) brightness(1.2); 
+    }
+    100% { 
+        filter: drop-shadow(0 0 8px var(--aura-color)) brightness(1);
+    }
+}
+
+/* 落下アニメーション：左右にランダムに揺れながら落ちる */
+@keyframes fall {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg) scale(0.5);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(15vh) translateX(var(--sway-x1)) rotate(var(--rot-1)) scale(1);
+    }
+    40% {
+        transform: translateY(40vh) translateX(var(--sway-x2)) rotate(var(--rot-2)) scale(1.06);
+    }
+    70% {
+        transform: translateY(72vh) translateX(var(--sway-x3)) rotate(var(--rot-3)) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(calc(125vh - var(--spawn-top))) translateX(calc(var(--sway-x3) * 1.15)) rotate(calc(var(--rot-3) + 18deg)) scale(0.78);
+        opacity: 0;
+    }
+}
