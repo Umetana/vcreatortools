@@ -9,7 +9,7 @@ v0.3.0 では、見た目と公開Facadeを大きく変えずに内部責務を�
 ## 2. バージョン系統
 
 - VCT Core `v0.3.0`: runtime / ui / logger を含む Core テンプレート全体の版
-- VCT SDK `v1.2.0`: `vct_one_core.js` の版
+- VCT SDK `v1.2.1`: `vct_one_core.js` の版
 - VCT_IDB wrapper `v0.5.0` 系: IndexedDB facade の仕様版
 
 VCT Core 本体版と VCT_IDB wrapper 仕様版は別系統です。
