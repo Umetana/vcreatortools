@@ -4,8 +4,8 @@
 
 ## 1. システム構成
 
-- Core: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT Core SDK v1.2.1
+- UI Framework: Vue.js 3 (Composition API)
+- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.1
 - Styling: Vanilla CSS + CSS Variables
 
 ## 2. フォルダ構成
@@ -16,7 +16,7 @@
 - `config.js`: 実際に読み込まれる設定。
 - `config_default.js`: 設定エディタのデフォルト復元用設定。
 - `config_editor.html`: 設定変更用UI。
-- `lib/vct_one_core.js`: VCT Core SDK v1.2.1。
+- `lib/vct_one_core.js`: VCT SDK v1.2.1。
 
 ## 3. データ処理
 

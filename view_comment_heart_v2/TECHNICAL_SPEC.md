@@ -4,8 +4,8 @@
 
 ## 1. システム構成
 
-- **Core**: Vue.js 3 (Composition API)
-- **SDK**: OneSDK / VCT Core SDK (v1.2.1)
+- **UI Framework**: Vue.js 3 (Composition API)
+- **SDK**: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.1
 - **Styling**: Vanilla CSS (CSS Variables)
 
 ## 2. フォルダ構成
@@ -15,7 +15,7 @@
 - `style.css`: レイアウトおよびアニメーションの定義。
 - `config.js`: 初期設定ファイル。
 - `config_editor.html`: 設定変更用UI。
-- `lib/`: VCT Core SDK などの同梱ライブラリ。
+- `lib/`: VCT SDK などの同梱ライブラリ。
 
 ## 3. ハート演出 (Heart Embrace) の仕組み
 
@@ -59,7 +59,7 @@ CSSのアニメーション (`@keyframes heart-drift`) により、これらの�
 
 ## 5.1 ユーザー属性バッジ
 
-VCT Core SDK の `parsed.user.isOwner` / `parsed.user.isModerator` を参照し、OWNER/MOD バッジを表示します。
+VCT SDK の `parsed.user.isOwner` / `parsed.user.isModerator` を参照し、OWNER/MOD バッジを表示します。
 `isOwner` が true の場合は OWNER を優先し、MOD は同時表示しません。
 
 ## 6. 演出の拡張
@@ -69,5 +69,5 @@ VCT Core SDK の `parsed.user.isOwner` / `parsed.user.isModerator` を参照し�
 
 ## 7. 注意事項
 
-- 本テンプレートは `VCT Core SDK` を使用しています。共有フォルダ内の `vct_one_core.js` が正しく読み込まれている必要があります。
+- 本テンプレートは `VCT SDK` (`vct_one_core.js`) を使用しています。同梱または共有フォルダ内の `vct_one_core.js` が正しく読み込まれている必要があります。
 - ハート演出はブラウザの `GPU` リソースを消費するため、`HEART_COUNT` を極端に大きくしすぎないよう注意してください。

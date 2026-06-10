@@ -234,8 +234,8 @@
     </div>
 
     <div class="footer-note">
-        Chrome/Edgeでは <b>config.jsを開く</b> で既存ファイルを選ぶと、そのまま上書き保存できます。<br>
-        非対応ブラウザではダウンロードしたファイルをテンプレートフォルダ内の <b>config.js</b> と入れ替えてください。
+        わんコメのカスタムテンプレート置き場やブラウザのセキュリティ設定により、<b>config.jsを開く</b> / <b>上書き保存</b> が使えない場合があります。<br>
+        確実な方法は <b>config.jsをダウンロード</b> して、テンプレートフォルダ内の <b>config.js</b> と入れ替えることです。
     </div>
 
     <script>
@@ -329,8 +329,8 @@
             render();
             setStatus(
                 supportsFileSystemAccess()
-                    ? '現在の config.js を読み込みました。上書き保存する場合は、初回のみ config.js を開いてください。'
-                    : 'このブラウザでは直接上書き保存に未対応です。ダウンロード保存を使用してください。'
+                    ? '現在の config.js を読み込みました。直接上書き保存はブラウザや配置場所により失敗する場合があります。確実に反映する場合はダウンロード保存を使用してください。'
+                    : 'この環境では直接読み書きに未対応です。config.jsをダウンロードして差し替えてください。'
             );
         }
 
@@ -484,7 +484,7 @@
 
         async function openConfigFile() {
             if (!supportsFileSystemAccess()) {
-                setStatus('このブラウザでは config.js の直接読み書きに対応していません。', 'error');
+                setStatus('この環境では config.js の直接読み書きに対応していません。ダウンロード保存を使用してください。', 'error');
                 return;
             }
 
@@ -512,7 +512,7 @@
 
         async function saveConfigFile() {
             if (!supportsFileSystemAccess()) {
-                setStatus('このブラウザでは直接上書き保存に未対応です。ダウンロード保存を使用してください。', 'error');
+                setStatus('この環境では直接上書き保存に未対応です。config.jsをダウンロードして差し替えてください。', 'error');
                 return;
             }
 

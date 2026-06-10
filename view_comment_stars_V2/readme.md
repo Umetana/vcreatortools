@@ -2,7 +2,7 @@
 
 ギフトコメントに `★` が斜めに降り注ぐ、わんコメ用のGlass系カスタムテンプレートです。
 
-VCT Core SDK v1.2.1 の `parseStructured()` / `event` レイヤーに対応し、コメント本文と支援・メンバーシップ情報を分離して表示します。
+VCT SDK (`vct_one_core.js`) v1.2.1 の `parseStructured()` / `event` レイヤーに対応し、コメント本文と支援・メンバーシップ情報を分離して表示します。
 
 ## 主な機能
 
@@ -36,6 +36,13 @@ VCT Core SDK v1.2.1 の `parseStructured()` / `event` レイヤーに対応し�
 2. `view_comment_stars_V2` フォルダを配置します。
 3. わんコメの「テンプレート選択」から `View Comment Stars V2` を選択します。
 
+## 設定エディタについて
+
+`config_editor.html` は設定値の編集と `config.js` の生成に使えます。
+ブラウザのセキュリティ制限により、直接読み込み・上書き保存が使えない場合は、`config.jsをダウンロード` で生成したファイルをテンプレートフォルダ内の `config.js` と入れ替えてください。
+
 ## ライセンス
+
+MIT LICENSE
 
 本テンプレートは改造・再配布自由です。
