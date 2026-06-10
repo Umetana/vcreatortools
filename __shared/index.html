@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>VCT Shared Resources</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: "Segoe UI", sans-serif;
+      background: #1e1e2e;
+      color: #f8f8f2;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #4cc9f0;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #cfcfe6;
+      line-height: 1.6;
+    }
+    .box {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #44475a;
+      border-radius: 8px;
+      background: #282a36;
+    }
+    .warn {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 4px solid #ff5555;
+      background: rgba(255, 85, 85, 0.1);
+    }
+    ul {
+      margin: 10px 0 0 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    code {
+      background: #111;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #90f7d4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>VCT Shared Resources</h1>
+    <p>
+      このフォルダは <strong>共通ライブラリ（__shared）</strong> です。<br>
+      直接テンプレートとして使用するものではありません。
+    </p>
+
+    <div class="warn">
+      ⚠ このページが表示された場合、このフォルダ単体では動作しません。
+    </div>
+
+    <div class="box">
+      <h2>使用方法</h2>
+      <p>以下のテンプレートをそれぞれわんコメに追加してください：</p>
+      <ul>
+        <li>Support Banner（表示テンプレート）</li>
+        <li>Dashboard（管理ツール）</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>手動設置について</h2>
+      <p>
+        テンプレートが正しく動作しない場合は、<br>
+        以下のようにフォルダ構成を確認してください：
+      </p>
+      <ul>
+        <li><code>/support_banner</code></li>
+        <li><code>/dashboard</code></li>
+        <li><code>/__shared</code></li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>概要</h2>
+      <p>
+        本ツールは配信支援履歴の管理・可視化を目的としたものです。<br>
+        CommentRaidとは独立した単体ツールとしても利用できます。
+      </p>
+    </div>
+  </div>
+</body>
+</html>
