@@ -22,6 +22,7 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
 
 ### Development
 
+* `CommentFX_base_V2/`
 * `custom_base_template_V2/`
 
   * VCT SDK対応のカスタムテンプレート開発ベース
@@ -40,6 +41,8 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
 * `VCT_support_thanks/`
 * `V_Telop_SYSTEM_V1/`
 * `Ms_Tally_v0_6/`
+* `Welcome_Celebration_V2/`
+
 
 各テンプレートの詳細は、それぞれのフォルダ内の README を参照してください。
 
