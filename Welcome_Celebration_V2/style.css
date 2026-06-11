@@ -1,0 +1,252 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: "Segoe UI", "Noto Sans JP", system-ui, sans-serif;
+}
+
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.celebration {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10;
+  transition: opacity 280ms ease;
+}
+
+.celebration.is-active {
+  opacity: 1;
+}
+
+.celebration::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.55), transparent 25%),
+    linear-gradient(135deg, rgba(16, 160, 96, 0.82), rgba(32, 190, 220, 0.66) 50%, rgba(255, 94, 188, 0.58));
+  transition: opacity 220ms ease;
+}
+
+.celebration.is-active::before {
+  opacity: 1;
+  animation: welcomeBackdrop 5s ease-out both;
+}
+
+.celebration.tone-milestone::before {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.52), transparent 25%),
+    linear-gradient(135deg, rgba(40, 130, 240, 0.78), rgba(36, 198, 150, 0.66) 52%, rgba(255, 220, 74, 0.62));
+}
+
+.celebration-bg-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: rgba(255, 255, 255, 0.18);
+  font-size: min(18vw, 260px);
+  font-weight: 1000;
+  letter-spacing: 0;
+  line-height: 1;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  white-space: nowrap;
+  text-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.celebration-card {
+  --card-scale: 1;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: min(760px, 78vw);
+  min-height: min(620px, 78vh);
+  box-sizing: border-box;
+  padding: clamp(28px, 4vw, 58px);
+  border: 8px solid rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(237, 255, 246, 0.92)),
+    linear-gradient(135deg, #19d37b, #45d8ff);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.34),
+    0 0 0 12px rgba(255, 255, 255, 0.28);
+  color: #093529;
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.celebration-card.is-playing {
+  animation:
+    cardEntrance 720ms cubic-bezier(0.2, 1.4, 0.28, 1) both,
+    cardPulse 1100ms ease-in-out 760ms infinite;
+}
+
+.celebration-avatar-wrap {
+  position: relative;
+  width: clamp(112px, 14vw, 180px);
+  aspect-ratio: 1;
+  margin-bottom: clamp(12px, 2vw, 22px);
+  border: 8px solid #fff;
+  border-radius: 50%;
+  background: #0f9d58;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.celebration-avatar,
+.celebration-avatar-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.celebration-avatar {
+  object-fit: cover;
+}
+
+.celebration-avatar-fallback {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: clamp(42px, 7vw, 78px);
+  font-weight: 900;
+}
+
+.is-hidden {
+  display: none;
+}
+
+.celebration-label {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #093529;
+  color: #fff;
+  font-size: clamp(18px, 2.5vw, 32px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.celebration-user {
+  max-width: 100%;
+  margin-top: clamp(18px, 2.4vw, 28px);
+  color: #06271f;
+  font-size: clamp(38px, 6vw, 76px);
+  font-weight: 1000;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-shadow: 0 3px 0 rgba(25, 211, 123, 0.3);
+}
+
+.celebration-headline {
+  margin-top: clamp(12px, 2vw, 22px);
+  color: #ff2d9c;
+  font-size: clamp(42px, 7vw, 96px);
+  font-weight: 1000;
+  line-height: 0.95;
+  text-align: center;
+  text-shadow:
+    0 4px 0 #fff06a,
+    0 10px 24px rgba(255, 45, 156, 0.28);
+}
+
+.tone-milestone .celebration-headline {
+  color: #0b75ff;
+  text-shadow:
+    0 4px 0 #fff06a,
+    0 10px 24px rgba(11, 117, 255, 0.26);
+}
+
+.celebration-event-label {
+  max-width: 100%;
+  margin-top: clamp(14px, 2vw, 24px);
+  color: #0a4a3a;
+  font-size: clamp(18px, 2.7vw, 34px);
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.celebration-message {
+  margin-top: 8px;
+  color: rgba(9, 53, 41, 0.72);
+  font-size: clamp(16px, 2.2vw, 26px);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.comments {
+  display: var(--show-comments, none);
+}
+
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-8deg);
+  }
+  48% {
+    opacity: 1;
+    transform: scale(calc(var(--card-scale) * 1.3)) rotate(3deg);
+  }
+  68% {
+    opacity: 1;
+    transform: scale(calc(var(--card-scale) * 0.9)) rotate(-1deg);
+  }
+  84% {
+    opacity: 1;
+    transform: scale(calc(var(--card-scale) * 1.1)) rotate(0.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(var(--card-scale)) rotate(0);
+  }
+}
+
+@keyframes cardPulse {
+  0%,
+  100% {
+    transform: scale(var(--card-scale));
+  }
+  50% {
+    transform: scale(calc(var(--card-scale) * 1.035));
+  }
+}
+
+@keyframes welcomeBackdrop {
+  0% {
+    transform: scale(1.1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(2deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .celebration-card {
+    width: min(520px, 88vw);
+    min-height: min(560px, 82vh);
+    padding: 28px 20px;
+  }
+}

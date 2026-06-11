@@ -1,0 +1,29 @@
+#sample-counter-ui {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.sample-counter-panel {
+  min-width: 220px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.6);
+  background: rgba(0, 0, 0, 0.55);
+  color: #e0f2fe;
+  font-family: sans-serif;
+}
+
+#sample-counter-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sample-counter-line {
+  margin-top: 6px;
+  font-size: 20px;
+}
+

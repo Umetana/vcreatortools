@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Comment FX Base v2.6</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body hidden>
+
+  <!-- エフェクト描画レイヤー -->
+  <canvas id="fx"></canvas>
+
+  <!-- 公式テンプレの表示領域（消すかどうかはCSSで制御） -->
+  <div id="container" class="container">
+    <div class="comments"></div>
+  </div>
+
+  <!-- わんコメ必須 -->
+  <script src="../__origin/js/onesdk.js"></script>
+
+  <!-- 設定 -->
+  <script src="./config.js"></script>
+
+  <!-- VCT SDK (vct_one_core.js): 同梱版を優先し、開発環境では外部 _vct_core も利用可能 -->
+  <script>
+    window.VCT_CORE_PATHS = [
+      "./_lib/vct_one_core.js",
+      "../_vct_core/js/vct_one_core.js"
+    ];
+  </script>
+
+  <!-- VCT SDK 解決後に parser / engine / fx / script を順番に読み込む -->
+  <script src="./vct-loader.js"></script>
+
+</body>
+
+</html>

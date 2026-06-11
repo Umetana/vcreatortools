@@ -1,0 +1,417 @@
+/* Sweets Heaven Styles */
+
+:root {
+  --bottom-ui-h: 280px;
+  --log-viewport-h: 260px;
+
+  --idol-pink: #ff8fd7;
+  --idol-pink-strong: #ff5fc2;
+  --idol-purple: #c06bff;
+  --idol-white: #fff8ff;
+  --idol-dark: rgba(0, 0, 0, 0.18);
+  --idol-dark-strong: rgba(0, 0, 0, 0.42);
+  --sweets-gauge-start: #ffb7e8;
+  --sweets-gauge-mid: #ff7fd3;
+  --sweets-gauge-end: #c66dff;
+  --sweets-gauge-lag-start: rgba(255, 190, 230, 0.55);
+  --sweets-gauge-lag-mid: rgba(255, 150, 215, 0.40);
+  --sweets-gauge-lag-end: rgba(240, 120, 215, 0.22);
+  --sweets-gauge-glow-strong: rgba(255, 120, 210, 0.42);
+  --sweets-gauge-glow-soft: rgba(245, 111, 255, 0.20);
+}
+
+
+#ui-top {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  z-index: 9000;
+  pointer-events: none;
+}
+
+.boss-spawn {
+  animation: bossSpawn 0.35s ease-out;
+}
+
+@keyframes bossSpawn {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  60% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
+
+#boss-panel {
+  position: relative;
+  /* 子要素の絶対配置の基準にする */
+  width: 820px;
+  height: 140px;
+  /* 高さを固定して安定させる */
+  padding: 0;
+  /* 絶対配置を多用するためパディングを0に */
+  background: linear-gradient(135deg,
+      /*      rgba(240, 150, 210, 0.85), */
+      /*      rgba(255, 255, 255, 0.98)); */
+      rgba(20, 0, 18, 1),
+      rgba(20, 0, 18, 0.70));
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.4),
+    inset 0 0 24px rgba(255, 120, 210, 0.15);
+  overflow: hidden;
+}
+
+#boss-title {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--idol-pink);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.8),
+    1px 1px 0 rgba(0, 0, 0, 0.8);
+  z-index: 10;
+}
+
+#boss-label {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  width: 400px;
+  /* ゲージの斜め部分に被らない程度の幅 */
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--idol-purple);
+  text-shadow:
+    0 0 8px rgba(255, 120, 210, 0.8),
+    4px 4px 0 rgba(0, 0, 0, 0.8);
+  z-index: 10;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#idol-stage-line {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+#idol-stage-prefix {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--idol-pink);
+  text-shadow:
+    0 0 8px rgba(255, 120, 210, 0.30),
+    0 0 18px rgba(255, 120, 210, 0.15);
+}
+
+#idol-stage-level {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--idol-pink);
+  text-shadow:
+    0 0 10px rgba(255, 120, 210, 0.38),
+    0 0 22px rgba(255, 120, 210, 0.18);
+}
+
+/* ゲージ位置の調整 */
+#boss-bar-wrap {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  padding: 12px;
+  /* 外枠との間に余白を作る */
+  box-sizing: border-box;
+}
+
+/* 互換性維持: #boss-bar / #boss-bar-fill / #boss-bar-lag をそのまま使う */
+#boss-bar {
+  position: absolute;
+  bottom: 12px;
+  /* paddingと合わせて調整 */
+  right: 12px;
+  width: calc(100% - 24px);
+  /* 余白分を引く */
+  height: calc(100% - 24px);
+  overflow: hidden;
+
+  /* 直角が右下 */
+  clip-path: polygon(0 100%, 100% 100%, 100% 0);
+
+  background:
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02));
+  /*  border-right: 2px solid rgba(255, 170, 225, 0.4);
+  border-bottom: 2px solid rgba(255, 170, 225, 0.4); */
+}
+
+#boss-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 100%, 100% 100%, 100% 0);
+  /*  border: 1px solid rgba(255, 220, 245, 0.75); */
+  box-sizing: border-box;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ラグゲージ */
+#boss-bar-lag {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(90deg,
+      var(--sweets-gauge-lag-start) 0%,
+      var(--sweets-gauge-lag-mid) 60%,
+      var(--sweets-gauge-lag-end) 100%);
+  transform-origin: left center;
+  transition: width 0.55s ease-out;
+  z-index: 0;
+}
+
+/* メインゲージ */
+#boss-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(90deg,
+      var(--sweets-gauge-start) 0%,
+      var(--sweets-gauge-mid) 38%,
+      var(--sweets-gauge-mid) 68%,
+      var(--sweets-gauge-end) 100%);
+  box-shadow:
+    0 0 12px var(--sweets-gauge-glow-strong),
+    0 0 24px var(--sweets-gauge-glow-soft);
+  transform-origin: left center;
+  transition: width 0.20s ease-out;
+  z-index: 1;
+}
+
+#boss-panel.sweets-rainbow #boss-bar-fill {
+  background:
+    linear-gradient(90deg,
+      #ff6b6b 0%,
+      #ffb86b 16%,
+      #ffe96b 32%,
+      #8df06f 48%,
+      #5fd5ff 64%,
+      #7f7bff 82%,
+      #e26bff 100%);
+  background-size: 220% 100%;
+  box-shadow:
+    0 0 14px rgba(255, 255, 255, 0.45),
+    0 0 28px rgba(255, 107, 107, 0.28),
+    0 0 38px rgba(127, 123, 255, 0.24);
+  animation: sweetsRainbowShift 2.6s linear infinite;
+}
+
+#boss-panel.sweets-rainbow #boss-bar-lag {
+  background:
+    linear-gradient(90deg,
+      rgba(255, 107, 107, 0.34) 0%,
+      rgba(255, 233, 107, 0.30) 32%,
+      rgba(95, 213, 255, 0.26) 64%,
+      rgba(226, 107, 255, 0.22) 100%);
+}
+
+/* 斜め走査っぽいハイライト */
+#boss-bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg,
+      rgba(255, 255, 255, 0.00) 0%,
+      rgba(255, 255, 255, 0.20) 28%,
+      rgba(255, 255, 255, 0.00) 50%);
+  mix-blend-mode: screen;
+  animation: idolGaugeSheen 2.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes idolGaugeSheen {
+  0% {
+    transform: translateX(-45%);
+  }
+
+  100% {
+    transform: translateX(45%);
+  }
+}
+
+@keyframes sweetsRainbowShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+#boss-hp-text {
+  position: absolute;
+  right: 36px;
+  bottom: 24px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--idol-white);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.7);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ログ */
+#ui-bottom {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(var(--log-center-offset, -50%));
+  width: 1200px;
+  max-width: 90vw;
+  height: var(--bottom-ui-h);
+  z-index: 9000;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#log-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--log-viewport-h);
+  overflow: hidden;
+  padding: 12px 24px;
+  box-sizing: border-box;
+  background: linear-gradient(to top,
+      rgba(20, 0, 18, 1),
+      rgba(20, 0, 18, 0.70));
+}
+
+.raid-log {
+  font-size: 28px;
+  line-height: 1.25;
+  color: #ffeaff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.98;
+  padding-left: var(--log-padding-left, 0px);
+}
+
+.raid-log .name {
+  font-weight: 800;
+  margin-right: 10px;
+  color: #ff3388 !important;
+}
+
+.raid-log img {
+  height: 1.1em;
+  vertical-align: -0.2em;
+  margin: 0 2px;
+}
+
+/* スタンプはそのまま使える */
+#raid-stamp {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  z-index: 9500;
+  pointer-events: none;
+}
+
+/* 表示するスタンプの最大サイズ 超えたらこの値に縮小 */
+#raid-stamp img {
+  display: block;
+  max-width: min(768px, 70vw);
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+
+#raid-stamp.show {
+  animation: raidStampPop 2.5s ease-out both;
+}
+
+@keyframes raidStampPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
+/* LEVEL UP や HYPE 状態用に流用しやすい強調クラス */
+#boss-panel.is-boss-invincible {
+  border-color: rgba(255, 170, 230, 0.80);
+  box-shadow:
+    0 0 36px rgba(255, 120, 210, 0.32),
+    inset 0 0 26px rgba(255, 120, 210, 0.14);
+  transition: all 0.35s ease;
+}
+
+#boss-panel.is-boss-invincible #boss-bar {
+  border-color: rgba(255, 210, 240, 0.95);
+  box-shadow:
+    0 0 18px rgba(255, 120, 210, 0.34),
+    inset 0 0 24px rgba(255, 120, 210, 0.16);
+}
+
+#boss-panel.is-boss-invincible #boss-bar-fill {
+  background:
+    linear-gradient(90deg,
+      #ffd7f2 0%,
+      #ff9ae0 35%,
+      #ff79db 60%,
+      #d78cff 100%);
+}

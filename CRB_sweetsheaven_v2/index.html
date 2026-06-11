@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- CommentRaid - Sweets Heaven v2 -->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>CommentRaid - Sweets Heaven</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body hidden>
+
+  <!-- エフェクト描画レイヤー -->
+  <canvas id="fx"></canvas>
+  <video id="video-overlay"
+    style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:100; object-fit:contain;"
+    muted hidden></video>
+
+  <!-- 動的に読み込まれるプラグインUIの差し込み口 -->
+  <div id="ui-root"></div>
+
+  <!-- 公式テンプレの表示領域（消すかどうかはCSSで制御） -->
+  <div id="container" class="container">
+    <div class="comments"></div>
+  </div>
+
+  <!-- わんコメ必須 -->
+  <script src="../__origin/js/onesdk.js"></script>
+
+  <!-- 設定・データ -->
+  <script src="./data/config.js"></script>
+
+  <!-- コアエンジン -->
+  <script src="../comment_raid_base_v2/js/core/engine.js"></script>
+
+  <!-- V-Creator Tools: Core SDK -->
+  <script src="../_vct_core/js/vct_one_core.js"></script>
+
+  <!-- 演出エンジン -->
+  <script src="../comment_raid_base_v2/js/core/fx.js"></script>
+
+  <!-- コメント受信部 -->
+  <script src="../comment_raid_base_v2/js/core/script.js"></script>
+
+</body>
+
+</html>

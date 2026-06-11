@@ -1,0 +1,34 @@
+/* Base Template Styles */
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* デフォルトコメント表示のON/OFF */
+.comments {
+  display: var(--show-comments, block);
+}
+
+/* UI Injection Point (FHD 1920x1080) */
+#ui-root {
+  position: fixed;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  pointer-events: none;
+  z-index: 9000;
+  /* 
+     OBSソース設定として1920x1080を想定し、
+     プラグイン側はこの中で座標を指定できるようにします。
+  */
+}

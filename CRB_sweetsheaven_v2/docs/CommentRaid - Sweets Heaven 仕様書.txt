@@ -1,0 +1,175 @@
+CommentRaid - Sweets Heaven 仕様書
+
+※ このファイルは初期設計メモです。現行仕様は README.md と TECHNICAL_SPEC.md を優先してください。
+
+# CommentRaid - Sweets Heaven
+
+## 概要
+
+本プラグインは CommentRaid - IdolOnStage をベースとした派生ルールパックである。
+
+コメントを「スイーツ（Sweets）」に変換し、
+そのカロリー（kcal）を累積することで、
+配信を視覚的に盛り上げる演出を提供する。
+
+本プラグインはゲーム性を持たせることを目的とせず、
+コメントを促進するための演出として設計されている。
+
+---
+
+## コンセプト
+
+コメント → スイーツ化 → カロリー化 → 累積
+
+・誰でも気軽に参加できる
+・コメント内容による有利不利を極力排除
+・ランダム主体の気持ちよさ重視
+
+---
+
+## ベース
+
+以下のファイルを流用する
+
+- idol_logic.js
+- ui.html
+- style.css
+- plugin_manifest.js
+- idol_config.js
+
+---
+
+## 廃止要素
+
+以下は使用しない
+
+- レベル（Lv）
+- ステージ
+- スキル
+- 称号
+- ボルテージ（VOLTAGE）
+
+---
+
+## 状態管理
+
+```js
+state = {
+  totalCalories: number
+}
+初期値：0
+ローカルストレージ保存対応
+データモデル
+
+1コメントにつき1イベントを生成する
+
+event = {
+  userName: string,
+  sweetId: string,
+  sweetName: string,
+  emoji: string,
+  kcal: number,
+  isGift: boolean,
+  giftAmount: number,
+  spawnCount: number
+}
+
+※ 重要
+すべての表示・演出はこのイベントデータを参照すること
+
+ログ仕様
+○○ のコメントが △△ に変化！
+
+例：
+
+うめたな のコメントが ドーナツ に変化！
+
+※ kcalはログに含めない（演出で表示）
+
+### スイーツ定義
+SWEETS_MASTER = [
+  { id: "macaron", name: "マカロン", emoji: "🍬", baseKcal: 200, variance: 0.3 },
+  { id: "donut", name: "ドーナツ", emoji: "🍩", baseKcal: 320, variance: 0.3 },
+  { id: "cake", name: "ケーキ", emoji: "🍰", baseKcal: 450, variance: 0.35 },
+  { id: "parfait", name: "パフェ", emoji: "🍨", baseKcal: 700, variance: 0.4 }
+]
+スイーツ決定ロジック
+基本はランダム
+コメント長で軽くカテゴリ補正を行う（任意）
+
+例：
+
+短文：軽いスイーツ
+長文：少し豪華なスイーツ
+
+※ 完全な最適化を生まない設計とする
+
+kcal計算
+min = baseKcal * (1 - variance)
+max = baseKcal * (1 + variance)
+kcal = random(min, max)
+文字数補正（軽微）
+kcal += min(commentLength * 5, 120)
+
+※ 上限あり（暴走防止）
+
+ギフト仕様
+補正内容
+kcal倍率
+スイーツ生成数増加
+例
+種別	kcal倍率	生成数
+通常	1x	1
+小ギフト	1.5x	2〜4
+中ギフト	2〜3x	4〜8
+高額ギフト	3〜5x	8〜15
+赤スパ	3〜5x	10〜30
+
+※ サイズではなく「量」で派手さを出す
+
+演出仕様
+出現
+画面上部20〜25%
+横位置ランダム
+落下
+ゆらゆら動き（sin波）
+落下時間：1.5〜2.5秒
+消滅
+フェードアウト
+消滅位置でkcal表示
+kcal表示
++320 kcal
+少し上に浮く
+スケールアニメーションあり
+UI仕様
+上部表示
+TOTAL CALORIES
+123,456 kcal
+カウントアップ演出あり
+制御パラメータ
+MAX_ACTIVE_SWEETS: 30
+FALL_DURATION_MIN: 1.5
+FALL_DURATION_MAX: 2.5
+SWAY_AMOUNT: 20
+SPAWN_AREA_RATIO: 0.25
+非目標
+
+以下は実装しない
+
+配信者アバター依存演出
+口元吸い込み
+物理演算
+外部画像必須
+完成条件
+コメントでスイーツが出現する
+ログとスイーツが一致する
+kcalが正しく加算される
+上部に総カロリーが表示される
+ギフトで生成数が増える
+保存・復元が動作する
+設計方針（重要）
+
+### 本プラグインはゲームではない。
+
+コメント内容による攻略・最適化を生まない設計とし、
+ランダム性と視覚演出によって楽しさを提供する。

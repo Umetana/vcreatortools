@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Welcome Celebration V2</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body hidden>
+
+  <!-- エフェクト描画レイヤー -->
+  <canvas id="fx"></canvas>
+
+  <div id="celebration" class="celebration" aria-live="polite">
+    <div class="celebration-bg-text">WELCOME</div>
+    <section class="celebration-card">
+      <div class="celebration-avatar-wrap">
+        <img class="celebration-avatar is-hidden" alt="">
+        <div class="celebration-avatar-fallback">?</div>
+      </div>
+      <div class="celebration-label">NEW MEMBER</div>
+      <div class="celebration-user">Anonymous</div>
+      <div class="celebration-headline">WELCOME!</div>
+      <div class="celebration-event-label">新規メンバー</div>
+      <div class="celebration-message">ようこそ</div>
+    </section>
+  </div>
+
+  <!-- 公式テンプレの表示領域（消すかどうかはCSSで制御） -->
+  <div id="container" class="container">
+    <div class="comments"></div>
+  </div>
+
+  <!-- わんコメ必須 -->
+  <script src="../__origin/js/onesdk.js"></script>
+
+  <!-- 設定 -->
+  <script src="./config.js"></script>
+
+  <!-- VCT SDK (vct_one_core.js): 同梱版を優先し、開発環境では外部 _vct_core も利用可能 -->
+  <script>
+    window.VCT_CORE_PATHS = [
+      "./_lib/vct_one_core.js",
+      "../_vct_core/js/vct_one_core.js"
+    ];
+  </script>
+
+  <!-- VCT SDK 解決後に parser / engine / fx / script を順番に読み込む -->
+  <script src="./vct-loader.js"></script>
+
+</body>
+
+</html>
