@@ -28,10 +28,15 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
   * VCT SDK対応のカスタムテンプレート開発ベース
   * 新規コメント表示テンプレートの作成に利用可能
 
+* `custom_base_template_V2_7_dev/`
+
+  * `custom_base_template_V2/`をベースに設定UI内蔵、リアルタイムプレビュー追加のテスト版
+
 ### Templates
 
 コメントビューアや配信支援向けの各種テンプレートを収録しています。
 
+* `view_comment_flash_v2/`
 * `view_comment_heart_v2/`
 * `view_comment_stars_V2/`
 * `VCT_clock_V1/`
