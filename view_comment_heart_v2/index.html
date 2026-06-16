@@ -50,6 +50,13 @@
                   :alt="p.alt">
               </template>
             </div>
+            <div v-if="cmt.translationParts && cmt.translationParts.length" class="cmt__message cmt__message--translation">
+              <template v-for="(p, i) in cmt.translationParts" :key="'tr-' + i">
+                <span v-if="p.type === 'text'">{{ p.content }}</span>
+                <img v-else-if="p.type === 'emoji'" :src="p.url" class="emoji" :class="{ 'emoji--sticker': p.isSticker }"
+                  :alt="p.alt">
+              </template>
+            </div>
           </div>
 
           <!-- ハート演出レイヤー -->

@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - **UI Framework**: Vue.js 3 (Composition API)
-- **SDK**: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.1
+- **SDK**: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
 - **Styling**: Vanilla CSS (CSS Variables)
 
 ## 2. フォルダ構成
@@ -21,6 +21,7 @@
 
 `main.js` 内でコメント追加時、`HEART_MODE` に基づいてハートの座標・遅延・サイズ等のデータをランダムに生成し、各コメントオブジェクトの `hearts` 配列に格納します。
 V2 では `VCT.parseStructured(raw).event` を参照し、`event.isSupport` / `event.isMembership` / `system.isSticky` を special 判定に使用します。
+YouTube自動翻訳がある場合は `parsed.translation.parts` を参照し、`COMMENT_TRANSLATION_MODE` で元文、翻訳文、両方表示を切り替えます。
 
 ## 4. イベント本文フィルター
 
@@ -61,6 +62,10 @@ CSSのアニメーション (`@keyframes heart-drift`) により、これらの�
 
 VCT SDK の `parsed.user.isOwner` / `parsed.user.isModerator` を参照し、OWNER/MOD バッジを表示します。
 `isOwner` が true の場合は OWNER を優先し、MOD は同時表示しません。
+
+## 5.2 強調表示の濃度
+
+ギフト系コメントは `GIFT_BG_OPACITY` / `GIFT_BORDER_OPACITY`、メンバー系コメントは `MEMBER_BG_OPACITY` / `MEMBER_BORDER_OPACITY` で背景と枠線の濃度を個別に調整できます。
 
 ## 6. 演出の拡張
 

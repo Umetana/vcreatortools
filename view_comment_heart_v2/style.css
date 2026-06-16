@@ -93,8 +93,8 @@ body {
 }
 
 .cmt-member {
-  border-color: rgba(15, 157, 88, 0.85);
-  background: color-mix(in srgb, rgba(15, 157, 88, 0.65) calc(var(--gift-bg-opacity) * 100%), var(--bg-glass));
+  border-color: color-mix(in srgb, rgba(15, 157, 88, 1) calc(var(--member-border-opacity) * 100%), transparent);
+  background: color-mix(in srgb, rgba(15, 157, 88, 1) calc(var(--member-bg-opacity) * 100%), var(--bg-glass));
 }
 
 .cmt-system {
@@ -221,6 +221,12 @@ body {
   line-height: 1.45;
   word-break: break-all;
   white-space: pre-wrap;
+}
+
+.cmt__message--translation {
+  margin-top: 0.18em;
+  color: color-mix(in srgb, var(--text-main) 78%, transparent);
+  font-size: calc(var(--font-size) * 0.86);
 }
 
 .emoji {
