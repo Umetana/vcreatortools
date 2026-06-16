@@ -12,6 +12,7 @@ window.CONFIG_DEFAULT = {
   SHOW_NAME: true,            // 名前を表示するか
   SHOW_BADGES: true,          // バッジを表示するか
   SHOW_USER_FLAGS: true,      // OWNER/MODバッジを表示するか
+  COMMENT_TRANSLATION_MODE: "original", // "original" 元文 / "translated" 翻訳 / "both" 両方
   MAX_COMMENT_UNITS: 0,       // コメント本文の任意上限 (0で無制限)
 
   // イベント本文表示
@@ -36,6 +37,8 @@ window.CONFIG_DEFAULT = {
   // ギフト・スパチャ設定
   GIFT_BG_OPACITY: 0.9,       // ギフトの背景透明度 (0.0～1.0)
   GIFT_BORDER_OPACITY: 1.0,   // ギフトの枠線透明度 (0.0～1.0)
+  MEMBER_BG_OPACITY: 0.9,     // メンバー系の背景透明度 (0.0～1.0)
+  MEMBER_BORDER_OPACITY: 1.0, // メンバー系の枠線透明度 (0.0～1.0)
 
   // カラー・スタイル詳細設定
   BG_GLASS: "rgba(0, 0, 0, 0.45)", // コメント枠の背景色

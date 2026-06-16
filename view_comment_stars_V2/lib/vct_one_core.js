@@ -1,11 +1,11 @@
 /**
- * V-Creator Tools: OneComme Core SDK (VCT) v1.2.1
+ * V-Creator Tools: OneComme Core SDK (VCT) v1.2.3
  * 
  * 共通のコメント解析ロジックを提供し、各テンプレートのコードを簡略化します。
  */
 
 window.VCT = (function () {
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.3';
     const DEFAULT_COLOR = { r: 255, g: 255, b: 255 };
 
     /**
@@ -127,6 +127,22 @@ window.VCT = (function () {
 
         const found = candidates.find(value => String(value ?? '').trim());
         return found ?? "";
+    }
+
+    function buildTranslationInfo(data, sourceText) {
+        const html = String(data?.translated || '').trim();
+        const content = parseHtml(html);
+
+        return {
+            available: !!html,
+            text: content.text,
+            html,
+            parts: content.parts,
+            imgUrls: content.imgUrls,
+            sourceText: String(sourceText || '').trim(),
+            source: html ? 'youtube_auto_translation' : '',
+            visibility: html ? 'owner_only' : ''
+        };
     }
 
     function extractFirstImageInfo(html) {
@@ -282,6 +298,7 @@ window.VCT = (function () {
                 ...base,
                 kind: 'membership_gift',
                 category: 'membership',
+                isSupport: true,
                 isMembership: true,
                 isGiftSender: true,
                 giftCount,
@@ -420,7 +437,7 @@ window.VCT = (function () {
 
         return {
             platform: core.service?.id || raw?.service?.id || raw?.service || '',
-            userId: data?.userId || '',
+            userId: core.user?.id || data?.userId || '',
             userName: core.user?.displayName || 'Anonymous',
             displayName: core.user?.displayName || data?.displayName || data?.name || '',
             screenName: core.user?.screenName || '',
@@ -440,13 +457,16 @@ window.VCT = (function () {
         const core = ensureCoreComment(commentData);
         const { raw, data } = getCommentPayload({ raw: core.raw });
         const amount = core.monetization?.amount || 0;
+        const supportAmount = core.event?.isGiftSender && core.event?.giftCount > 0
+            ? core.event.giftCount
+            : amount;
 
-        if (!core.event?.isSupport || amount <= 0) {
+        if (!core.event?.isSupport || supportAmount <= 0) {
             return null;
         }
 
         const platform = core.service?.id || raw?.service?.id || raw?.service || '';
-        const userId = data?.userId || '';
+        const userId = core.user?.id || data?.userId || '';
         const userName = core.user?.displayName || 'Anonymous';
         const buildUserKey = typeof options.buildUserKey === 'function'
             ? options.buildUserKey
@@ -462,7 +482,7 @@ window.VCT = (function () {
             userId,
             userName,
             userIcon: core.user?.profileImage || '',
-            amount,
+            amount: supportAmount,
             currency: core.monetization?.currency || '',
             message: getDisplayMessage(toLegacy(core)),
             giftType: gift.type,
@@ -534,6 +554,7 @@ window.VCT = (function () {
                 name: raw?.service?.name || raw?.service?.id || raw?.service || ''
             },
             user: {
+                id: data?.userId || '',
                 name: data?.name || 'Anonymous',
                 displayName: data?.displayName || data?.name || 'Anonymous',
                 screenName: data?.screenName || null,
@@ -558,6 +579,7 @@ window.VCT = (function () {
                 legacyImgUrls: parsedContent.imgUrls,
                 command: vctCommand
             },
+            translation: buildTranslationInfo(data, baseContent.text),
             monetization: {
                 hasGift: !!data?.hasGift,
                 kind: data?.giftType || raw?.type || '',
@@ -620,6 +642,7 @@ window.VCT = (function () {
             id: core.id,
             service: core.service,
             user: {
+                id: core.user.id,
                 name: core.user.name,
                 displayName: core.user.displayName,
                 screenName: core.user.screenName,
@@ -640,6 +663,7 @@ window.VCT = (function () {
                 imgUrls: core.message.imgUrls,
                 command: core.message.command
             },
+            translation: core.translation,
             legacy: {
                 text: core.message.legacyText,
                 html: core.message.legacyHtml,

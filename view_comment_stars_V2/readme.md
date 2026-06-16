@@ -2,18 +2,20 @@
 
 ギフトコメントに `★` が斜めに降り注ぐ、わんコメ用のGlass系カスタムテンプレートです。
 
-VCT SDK (`vct_one_core.js`) v1.2.1 の `parseStructured()` / `event` レイヤーに対応し、コメント本文と支援・メンバーシップ情報を分離して表示します。
+VCT SDK (`vct_one_core.js`) v1.2.3 の `parseStructured()` / `event` レイヤーに対応し、コメント本文と支援・メンバーシップ情報を分離して表示します。
 
 ## 主な機能
 
 - Glassmorphism風のコメント表示
 - スパチャ、Super Sticker、メンバーシップ、メンギフ送信/受取、固定コメントの基本表示
 - OWNER/MODのユーザー属性バッジ表示
+- ギフト/メンバー系コメント枠の背景・枠線濃度調整
 - ギフト・メンバー・固定コメントへの星降り演出
 - `STAR_COLORS` による複数色の星パレット
 - CSSの明滅・色相変化による煌めき表現
 - `config_editor.html` による設定編集
 - イベント種別ごとの本文表示フィルター
+- YouTube自動翻訳文の表示切り替え
 
 ## 星降り演出
 
@@ -29,6 +31,7 @@ VCT SDK (`vct_one_core.js`) v1.2.1 の `parseStructured()` / `event` レイヤ�
 - `STAR_SIZE_MIN` / `STAR_SIZE_MAX`: 星のサイズ範囲
 - `STAR_DURATION_MIN` / `STAR_DURATION_MAX`: 落下時間
 - `STAR_DELAY_MAX`: 星ごとの開始遅延
+- `COMMENT_TRANSLATION_MODE`: `original` / `translated` / `both`
 
 ## 導入方法
 

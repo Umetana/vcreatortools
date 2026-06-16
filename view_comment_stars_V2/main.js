@@ -19,6 +19,8 @@ createApp({
       root.style.setProperty('--fade-out', (C.FADE_OUT_MS || 500) + 'ms');
       root.style.setProperty('--gift-bg-opacity', (C.GIFT_BG_OPACITY !== undefined ? C.GIFT_BG_OPACITY : 0.4));
       root.style.setProperty('--gift-border-opacity', (C.GIFT_BORDER_OPACITY !== undefined ? C.GIFT_BORDER_OPACITY : 0.8));
+      root.style.setProperty('--member-bg-opacity', (C.MEMBER_BG_OPACITY !== undefined ? C.MEMBER_BG_OPACITY : 0.9));
+      root.style.setProperty('--member-border-opacity', (C.MEMBER_BORDER_OPACITY !== undefined ? C.MEMBER_BORDER_OPACITY : 1.0));
 
       root.style.setProperty('--bg-glass', C.BG_GLASS || 'rgba(0, 0, 0, 0.45)');
       root.style.setProperty('--bg-blur', C.BG_BLUR || '12px');
@@ -160,17 +162,35 @@ createApp({
       return event.shouldShowMessage !== false;
     };
 
+    const getTranslationMode = () => {
+      const mode = String(C.COMMENT_TRANSLATION_MODE || 'original').toLowerCase();
+      return ['original', 'translated', 'both'].includes(mode) ? mode : 'original';
+    };
+
     const getDisplayParts = (parsed) => {
       if (!shouldShowEventMessage(parsed)) {
-        return [];
+        return { parts: [], translationParts: [] };
       }
 
       const parts = parsed?.message?.parts || [];
-      if (!parts.length) {
-        return [];
+      const translation = parsed?.translation || {};
+      const translationParts = translation.available && Array.isArray(translation.parts)
+        ? translation.parts
+        : [];
+      const mode = getTranslationMode();
+
+      if (mode === 'translated' && translationParts.length) {
+        return { parts: truncateParts(translationParts), translationParts: [] };
       }
 
-      return truncateParts(parts);
+      if (mode === 'both' && translationParts.length) {
+        return {
+          parts: truncateParts(parts),
+          translationParts: truncateParts(translationParts)
+        };
+      }
+
+      return { parts: truncateParts(parts), translationParts: [] };
     };
 
     const buildUserFlags = (user = {}) => {
@@ -205,6 +225,7 @@ createApp({
       const isSpecial = !!(event.isSupport || event.isMembership || parsed.system?.isSticky);
       const isSupport = !!event.isSupport;
       const isMembership = !!event.isMembership;
+      const displayParts = getDisplayParts(parsed);
 
       return {
         id: parsed.id,
@@ -212,7 +233,8 @@ createApp({
         profileImage: parsed.user?.profileImage || '',
         badges: parsed.user?.badges || [],
         userFlags: buildUserFlags(parsed.user),
-        parts: getDisplayParts(parsed),
+        parts: displayParts.parts,
+        translationParts: displayParts.translationParts,
         hasGift: isSupport,
         isSupport,
         isMembership,

@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - UI Framework: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.1
+- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
 - Styling: Vanilla CSS + CSS Variables
 
 ## 2. フォルダ構成
@@ -16,7 +16,7 @@
 - `config.js`: 実際に読み込まれる設定。
 - `config_default.js`: 設定エディタのデフォルト復元用設定。
 - `config_editor.html`: 設定変更用UI。
-- `lib/vct_one_core.js`: VCT SDK v1.2.1。
+- `lib/vct_one_core.js`: VCT SDK v1.2.3。
 
 ## 3. データ処理
 
@@ -26,11 +26,15 @@
 
 - ユーザー: `parsed.user.displayName` / `parsed.user.profileImage` / `parsed.user.badges` / `parsed.user.isOwner` / `parsed.user.isModerator`
 - 本文: `parsed.message.parts`
+- YouTube自動翻訳: `parsed.translation.parts`
 - イベント: `parsed.event.kind` / `parsed.event.displayLabel` / `parsed.event.isSupport` / `parsed.event.isMembership`
 - 固定コメント: `parsed.system.isSticky`
 - 強調色: `parsed.style.colorStr`
 
 OWNER/MOD は `buildUserFlags()` で表示用データに変換します。`isOwner` が true の場合は OWNER を優先し、MOD は同時表示しません。
+`COMMENT_TRANSLATION_MODE` は `original` / `translated` / `both` を受け取り、翻訳がない場合は元文表示へフォールバックします。
+
+ギフト系コメントは `GIFT_BG_OPACITY` / `GIFT_BORDER_OPACITY`、メンバー系コメントは `MEMBER_BG_OPACITY` / `MEMBER_BORDER_OPACITY` で背景と枠線の濃度を個別に調整できます。
 
 ## 4. 星降り演出
 
