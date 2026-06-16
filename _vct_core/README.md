@@ -5,7 +5,7 @@
 ## 現在の版
 
 - VCT Core: `v0.3.1-dev`
-- VCT OneComme Core SDK: `v1.2.1`
+- VCT OneComme Core SDK: `v1.2.2`
 - VCT_IDB wrapper 仕様: `v0.5.0` 系由来
 
 `VCT_IDB` の仕様版と VCT Core 本体版は別系統です。

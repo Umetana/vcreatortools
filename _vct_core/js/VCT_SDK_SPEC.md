@@ -1,4 +1,4 @@
-# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.1
+# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.3
 
 ## 1. 概要
 `vct_one_core.js` は、わんコメの `OneSDK` から送られてくる生データを、テンプレート開発で扱いやすい形式に解析・整形するための共有ライブラリです。
@@ -149,6 +149,7 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
   id: 'comment-id',
   service: { id: 'youtube', name: 'youtube' },
   user: {
+    id: 'platform-user-id',
     name: 'raw name',
     displayName: '表示名',
     profileImage: 'https://...'
@@ -159,6 +160,16 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
     parts: [],
     imgUrls: [],
     command: { exists: false, name: '', body: '', fullText: 'ユーザー本文' }
+  },
+  translation: {
+    available: true,
+    text: 'YouTube自動翻訳文',
+    html: 'YouTube自動翻訳HTML',
+    parts: [],
+    imgUrls: [],
+    sourceText: 'ユーザー本文',
+    source: 'youtube_auto_translation',
+    visibility: 'owner_only'
   },
   legacy: {
     text: 'Legacy表示本文',
@@ -217,6 +228,7 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 SDK API のバージョン文字列です。v1.1.0 以降で利用できます。
 
 ## 4. 特殊仕様
+- **YouTube自動翻訳**: YouTube 側が `data.translated` を提供する場合、`parseStructured()` は `translation` に翻訳文を保持します。翻訳文にYouTube絵文字の `<img>` が含まれる場合も `parts` / `imgUrls` に分解します。`message.text` は元コメントのまま維持し、テンプレート側で表示オン/オフを選べるようにします。翻訳はチャンネルオーナー側だけ見える可能性があるため、未提供時は `translation.available === false` になります。Legacy `VCT.parse()` の戻り値には追加しません。
 - **システムメッセージ補完**: メンギフやマイルストーンなど、本文が空でシステム情報だけがある場合、それらを結合して `text` および `parts` にセットします。
 - **本文ソース補完**: `comment` / `text` / `message` / `body` が空文字の場合、`speechText` を本文候補として扱います。メンバーシップギフト受取など、読み上げ文だけに内容が入るケースを補正します。
 - **スパチャ金額**: 金額テキスト（`paidText`）が存在し、本文に含まれていない場合は自動的に末尾へ追加されます。
@@ -243,6 +255,8 @@ OneSDK.subscribe({
 ```
 
 ## 6. 変更履歴
+- **v1.2.3**: `parseStructured()` に `translation` を追加。YouTube `data.translated` を元本文とは分離して保持し、Legacy `VCT.parse()` は変更なし。
+- **v1.2.2**: `parseStructured().user.id` にプラットフォーム側の `userId` を非破壊追加。取得できない場合は空文字列。
 - **v1.2.1**: 空文字の `comment` / `text` / `message` / `body` をスキップし、`speechText` へフォールバック。`giftreceived` など本文が空で読み上げ文だけに内容が入るケースを補正。API構造の変更はなし。
 - **v1.2.0**: `parseStructured()` に `event` レイヤーを追加。superchat / supersticker / membership_gift / membership_gift_received / member_join / member_milestone / membership_event / normal を分類。Legacy `parse()` の戻り値は原則変更なし。
 - **v1.1.0**: 内部正規化 `parseCore()` を追加し、`parse()` を Legacy 変換層へ整理。`parseStructured()` と `VERSION` を追加。Legacy 戻り値に `giftType`, `giftLabel`, `giftImageUrl` を非破壊追加。
