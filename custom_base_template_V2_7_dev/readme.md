@@ -1,6 +1,6 @@
 # Custom Base Template V2.7 v2.7.1-dev
 
-VCT SDK (`vct_one_core.js`) v1.2.1 に対応した、わんコメ用カスタムテンプレートの試験ベースです。
+VCT SDK (`vct_one_core.js`) v1.2.3 に対応した、わんコメ用カスタムテンプレートの試験ベースです。
 
 V2.7では、画面内設定パネルとlocalStorage設定を試験導入しています。従来版の `custom_base_template_V2` は変更せず残しています。
 
@@ -9,11 +9,12 @@ V2世代のコメント表示テンプレートを元に、固有演出を外し
 ## 主な機能
 
 - Vue 3 + OneSDK によるコメント購読
-- VCT SDK v1.2.1 の `parseStructured()` 対応
+- VCT SDK v1.2.3 の `parseStructured()` 対応
 - 通常コメント、スパチャ、Super Sticker、メンバーシップ、メンギフ送信/受取、固定コメントの基本表示
 - ユーザー名、アイコン、バッジ、OWNER/MOD、イベントラベル、本文パーツの分離表示
 - ギフト/メンバー系コメント枠の背景・枠線濃度調整
 - イベント種別ごとの本文表示フィルター
+- YouTube自動翻訳文の試験表示モード
 - `config_editor.html` による `config.js` 編集
 - 右下ギアから開く画面内設定パネル
 - localStorageによる設定差分の保存
@@ -69,6 +70,7 @@ OBSではブラウザソースの「対話」を開いた状態で操作して�
 ## 開発メモ
 
 - コメント本文は `parsed.message.parts` を優先して表示します。
+- `COMMENT_TRANSLATION_MODE` で元文、翻訳文、両方表示を切り替えます。
 - 金額、メンバーシップ、固定コメントなどの情報は `parsed.event` / `parsed.system` からメタラベルへ分離します。
 - CSS カスタムプロパティは `main.js` の `updateStyle()` で `window.CONFIG` から反映します。
 - `lib/vct_one_core.js` はこのテンプレートに同梱しています。共有化する場合は `index.html` の読み込みパスを調整してください。

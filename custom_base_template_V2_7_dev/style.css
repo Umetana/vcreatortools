@@ -227,6 +227,12 @@ body {
   white-space: pre-wrap;
 }
 
+.cmt__message--translation {
+  margin-top: 0.18em;
+  color: color-mix(in srgb, var(--text-main) 78%, transparent);
+  font-size: calc(var(--font-size) * 0.86);
+}
+
 .emoji {
   height: 1.25em;
   width: auto;

@@ -167,17 +167,37 @@ createApp({
       return event.shouldShowMessage !== false;
     };
 
+    const getTranslationMode = () => {
+      const mode = String(C.COMMENT_TRANSLATION_MODE || 'original').toLowerCase();
+      return ['original', 'translated', 'both'].includes(mode) ? mode : 'original';
+    };
+
     const getDisplayParts = (parsed) => {
       if (!shouldShowEventMessage(parsed)) {
-        return [];
+        return { parts: [], translationParts: [] };
       }
 
       const parts = parsed?.message?.parts || [];
-      if (!parts.length) {
-        return [];
+      const translation = parsed?.translation || {};
+      const translationParts = translation.available
+        ? (Array.isArray(translation.parts) && translation.parts.length
+          ? translation.parts
+          : [{ type: 'text', content: translation.text || '' }].filter(part => part.content))
+        : [];
+      const mode = getTranslationMode();
+
+      if (mode === 'translated' && translationParts.length) {
+        return { parts: truncateParts(translationParts), translationParts: [] };
       }
 
-      return truncateParts(parts);
+      if (mode === 'both' && translationParts.length) {
+        return {
+          parts: truncateParts(parts),
+          translationParts: truncateParts(translationParts)
+        };
+      }
+
+      return { parts: truncateParts(parts), translationParts: [] };
     };
 
     const buildUserFlags = (user = {}) => {
@@ -212,6 +232,17 @@ createApp({
       Object.assign(C, nextConfig);
       updateStyle();
 
+      comments.value = comments.value.map((current) => {
+        const refreshed = current.raw ? parseComment(current.raw) : null;
+        if (!refreshed) return current;
+
+        return {
+          ...refreshed,
+          giftColor: refreshed.isSpecial ? refreshed.colorStr : null,
+          timestamp: current.timestamp
+        };
+      });
+
       const maxItems = Math.max(1, Number(C.MAX_ITEMS || 10));
       if (comments.value.length > maxItems) {
         comments.value.splice(0, comments.value.length - maxItems);
@@ -231,6 +262,7 @@ createApp({
       const isSpecial = !!(event.isSupport || event.isMembership || parsed.system?.isSticky);
       const isSupport = !!event.isSupport;
       const isMembership = !!event.isMembership;
+      const displayParts = getDisplayParts(parsed);
 
       return {
         id: parsed.id,
@@ -238,7 +270,9 @@ createApp({
         profileImage: parsed.user?.profileImage || '',
         badges: parsed.user?.badges || [],
         userFlags: buildUserFlags(parsed.user),
-        parts: getDisplayParts(parsed),
+        parts: displayParts.parts,
+        translationParts: displayParts.translationParts,
+        hasTranslation: !!parsed.translation?.available,
         hasGift: isSupport,
         isSupport,
         isMembership,

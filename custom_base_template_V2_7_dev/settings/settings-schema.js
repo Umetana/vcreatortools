@@ -18,6 +18,7 @@
         SHOW_NAME: { type: 'checkbox', label: '名前' },
         SHOW_BADGES: { type: 'checkbox', label: 'バッジ' },
         SHOW_USER_FLAGS: { type: 'checkbox', label: 'OWNER / MOD' },
+        COMMENT_TRANSLATION_MODE: { type: 'select', options: ['original', 'translated', 'both'], label: '翻訳表示' },
         MAX_COMMENT_UNITS: { type: 'number', label: '本文上限 (0で無制限)' }
       }
     },

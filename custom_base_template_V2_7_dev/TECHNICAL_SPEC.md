@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - UI Framework: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.1
+- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
 - Styling: Vanilla CSS + CSS Variables
 
 ## 2. フォルダ構成
@@ -21,7 +21,7 @@
 - `settings/settings-schema.js`: 画面内設定パネルの項目定義。
 - `settings/settings-panel.js`: 設定パネルDOM、ファイル読込、localStorage保存を担当。
 - `settings/settings-panel.css`: 設定パネル専用スタイル。ギアクリック時に読み込む。
-- `lib/vct_one_core.js`: VCT SDK v1.2.1。
+- `lib/vct_one_core.js`: VCT SDK v1.2.3。
 - `lib/VCT_SDK_SPEC.md`: 同梱SDKの仕様メモ。
 
 ## 3. データ処理
@@ -32,11 +32,13 @@
 
 - ユーザー: `parsed.user.displayName` / `parsed.user.profileImage` / `parsed.user.badges` / `parsed.user.isOwner` / `parsed.user.isModerator`
 - 本文: `parsed.message.parts`
+- YouTube自動翻訳: `parsed.translation`
 - イベント: `parsed.event.kind` / `parsed.event.displayLabel` / `parsed.event.isSupport` / `parsed.event.isMembership`
 - 固定コメント: `parsed.system.isSticky`
 - 強調色: `parsed.style.colorStr`
 
 OWNER/MOD は `buildUserFlags()` で表示用データに変換します。`isOwner` が true の場合は OWNER を優先し、MOD は同時表示しません。
+`COMMENT_TRANSLATION_MODE` は `original` / `translated` / `both` を受け取り、翻訳が無い場合は元文表示へフォールバックします。
 
 `VCT.parseStructured()` が無い環境では、旧 `VCT.parse(raw)` を使って最低限の表示にフォールバックします。
 
