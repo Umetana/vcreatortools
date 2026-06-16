@@ -11,6 +11,7 @@ window.CONFIG = {
   SHOW_ICON: true,            // アイコンを表示するか
   SHOW_NAME: true,            // 名前を表示するか
   SHOW_BADGES: true,          // バッジを表示するか
+  COMMENT_TRANSLATION_MODE: "original", // "original" 元文 / "translated" 翻訳 / "both" 両方
   MAX_COMMENT_UNITS: 0,       // コメント本文の任意上限 (0で無制限)
 
   // イベント本文表示

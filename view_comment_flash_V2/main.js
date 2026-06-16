@@ -160,17 +160,35 @@ createApp({
       return event.shouldShowMessage !== false;
     };
 
+    const getTranslationMode = () => {
+      const mode = String(C.COMMENT_TRANSLATION_MODE || 'original').toLowerCase();
+      return ['original', 'translated', 'both'].includes(mode) ? mode : 'original';
+    };
+
     const getDisplayParts = (parsed) => {
       if (!shouldShowEventMessage(parsed)) {
-        return [];
+        return { parts: [], translationParts: [] };
       }
 
       const parts = parsed?.message?.parts || [];
-      if (!parts.length) {
-        return [];
+      const translation = parsed?.translation || {};
+      const translationParts = translation.available && Array.isArray(translation.parts)
+        ? translation.parts
+        : [];
+      const mode = getTranslationMode();
+
+      if (mode === 'translated' && translationParts.length) {
+        return { parts: truncateParts(translationParts), translationParts: [] };
       }
 
-      return truncateParts(parts);
+      if (mode === 'both' && translationParts.length) {
+        return {
+          parts: truncateParts(parts),
+          translationParts: truncateParts(translationParts)
+        };
+      }
+
+      return { parts: truncateParts(parts), translationParts: [] };
     };
 
     const normalizeLegacyComment = (parsed) => ({
@@ -192,13 +210,15 @@ createApp({
       const isSpecial = !!(event.isSupport || event.isMembership || parsed.system?.isSticky);
       const isSupport = !!event.isSupport;
       const isMembership = !!event.isMembership;
+      const displayParts = getDisplayParts(parsed);
 
       return {
         id: parsed.id,
         name: parsed.user?.displayName || parsed.user?.name || 'Anonymous',
         profileImage: parsed.user?.profileImage || '',
         badges: parsed.user?.badges || [],
-        parts: getDisplayParts(parsed),
+        parts: displayParts.parts,
+        translationParts: displayParts.translationParts,
         hasGift: isSupport,
         isSupport,
         isMembership,

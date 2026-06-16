@@ -8,7 +8,7 @@
 ## 1. システム構成
 
 - Core: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT Core SDK v1.2.1
+- SDK: OneSDK / VCT Core SDK v1.2.3
 - Styling: Vanilla CSS + CSS Custom Properties
 
 ## 2. フォルダ構成
@@ -19,7 +19,7 @@
 - `config.js`: 実際に読み込まれる設定ファイル。
 - `config_default.js`: 設定エディタのデフォルト復元用設定。
 - `config_editor.html`: 設定変更用GUI。スキーマ駆動でフィールドを自動レンダリングし、File System Access API で直接上書き保存に対応。
-- `lib/vct_one_core.js`: VCT Core SDK v1.2.1（同梱）。
+- `lib/vct_one_core.js`: VCT Core SDK v1.2.3（同梱）。
 
 ## 3. データ処理
 
@@ -28,11 +28,13 @@
 主な表示データ:
 - ユーザー: `parsed.user.displayName` / `parsed.user.profileImage` / `parsed.user.badges`
 - 本文: `parsed.message.parts`
+- YouTube自動翻訳: `parsed.translation.parts`
 - イベント: `parsed.event.kind` / `parsed.event.isSupport` / `parsed.event.isMembership`
 - 固定コメント: `parsed.system.isSticky`
 - 強調色: `parsed.style.colorStr`（インラインで `--gift-color` に渡す）
 
 `VCT.parseStructured()` が無い環境では、旧 `VCT.parse(raw)` でフォールバックします。
+`COMMENT_TRANSLATION_MODE` は `original` / `translated` / `both` を受け取り、翻訳がない場合は元文表示へフォールバックします。
 
 ## 4. CSS カスタムプロパティ設計
 

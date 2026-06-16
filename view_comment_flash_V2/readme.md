@@ -1,6 +1,6 @@
 # View Comment Flash V2 v1.0.0
 
-VCT Core SDK v1.2.1 対応の、わんコメ用コメント表示テンプレートです。
+VCT Core SDK v1.2.3 対応の、わんコメ用コメント表示テンプレートです。
 `custom_base_template_V2` をベースに、ギフト・メンバーシップコメントへのビジュアル演出を追加した配信向けコメントビュアーです。
 
 ---
@@ -8,10 +8,11 @@ VCT Core SDK v1.2.1 対応の、わんコメ用コメント表示テンプレー
 ## 主な機能
 
 - Vue 3 + OneSDK によるコメント購読
-- VCT Core SDK v1.2.1 の `parseStructured()` 対応（旧 `VCT.parse()` へのフォールバックあり）
+- VCT Core SDK v1.2.3 の `parseStructured()` 対応（旧 `VCT.parse()` へのフォールバックあり）
 - 通常コメント / スパチャ / Super Sticker / メンバーシップ加入・継続・ギフト / 固定コメントの表示
 - ユーザー名、アイコン、バッジ、イベントラベル（スパチャ金額など）の分離表示
 - イベント種別ごとの本文表示フィルター
+- YouTube自動翻訳文の表示切り替え
 - `config_editor.html` による設定の GUI 編集と上書き保存
 - ギフト・メンバーシップコメントへのビジュアル演出（7種類）
 
@@ -53,6 +54,7 @@ VCT Core SDK v1.2.1 対応の、わんコメ用コメント表示テンプレー
 | SHOW_ICON | アイコン表示 | true |
 | SHOW_NAME | ユーザー名表示 | true |
 | SHOW_BADGES | バッジ表示 | true |
+| COMMENT_TRANSLATION_MODE | original / translated / both | "original" |
 | MAX_COMMENT_UNITS | 本文の文字・絵文字換算上限（0で無制限） | 0 |
 
 ### イベント本文表示フィルター
