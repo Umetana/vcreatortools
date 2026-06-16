@@ -1,0 +1,23 @@
+window.CONFIG_DEFAULT = {
+  TITLE: "今日のリスナールーレット",
+  WAITING_TEXT: "コメントから次の挑戦者を待っています",
+  HISTORY_TITLE: "最近の抽選結果",
+  TRIGGER_COMMANDS: "!ルーレット,!roulette",
+  AUTO_TRIGGER: false,
+  AUTO_TRIGGER_RATE: 0.05,
+  AUTO_TRIGGER_COOLDOWN_MS: 60000,
+  MIN_SLOTS: 1,
+  MAX_SLOTS: 12,
+  SPIN_DURATION_MS: 2500,
+  RESULT_DISPLAY_MS: 3000,
+  INTRO_DURATION_MS: 600,
+  HISTORY_MAX: 8,
+  SHOW_HISTORY: true,
+  MIN_SPIN_CYCLES: 4,
+  FONT_FAMILY: '"M PLUS 1p", "Noto Sans JP", sans-serif',
+  ACCENT_COLOR: "#ffd54a",
+  SECONDARY_COLOR: "#ff5c8a",
+  PANEL_BG: "rgba(12, 16, 30, 0.88)",
+  TEXT_COLOR: "#ffffff",
+  DEBUG: false
+};

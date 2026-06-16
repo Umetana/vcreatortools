@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VCT Comment Roulette V1</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    <main class="roulette-layout" :class="{ 'is-active': isActive, 'is-result': phase === 'result' }">
+      <section class="roulette-card">
+        <header class="roulette-header">
+          <p class="eyebrow">COMMENT ROULETTE</p>
+          <h1>{{ config.TITLE }}</h1>
+          <p v-if="isActive" class="target">対象：<strong>{{ targetName }}</strong></p>
+          <p v-else class="target target--waiting">{{ config.WAITING_TEXT }}</p>
+        </header>
+
+        <div v-if="isActive" class="roulette-stage">
+          <div class="theme-label">{{ themeTitle }}</div>
+          <div class="slot-list" :data-count="slots.length" :class="{ 'slot-list--single': slots.length === 1 }">
+            <div v-for="(item, index) in slots" :key="index + ':' + item" class="slot"
+              :class="{ 'is-selected': selectedIndex === index, 'is-winner': phase === 'result' && winnerIndex === index, 'is-dimmed': phase === 'result' && winnerIndex !== index }">
+              <span class="slot-number">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="slot-text">{{ item }}</span>
+              <span class="slot-marker">▶</span>
+            </div>
+          </div>
+          <div class="result-panel" :class="{ 'is-visible': phase === 'result' }">
+            <span class="result-label">RESULT</span>
+            <strong>{{ resultText }}</strong>
+          </div>
+        </div>
+
+        <div v-else class="standby-panel">
+          <span class="standby-mark">?</span>
+          <p>{{ commandGuide }}</p>
+        </div>
+      </section>
+
+      <aside v-if="config.SHOW_HISTORY" class="history-card">
+        <div class="history-header">
+          <span>RECENT RESULTS</span>
+          <strong>{{ config.HISTORY_TITLE }}</strong>
+        </div>
+        <transition-group name="history" tag="ol" class="history-list" :data-count="history.length">
+          <li v-for="entry in history" :key="entry.id">
+            <span class="history-name">{{ entry.name }}</span>
+            <span class="history-theme">{{ entry.theme }}</span>
+            <strong>{{ entry.result }}</strong>
+          </li>
+        </transition-group>
+        <p v-if="!history.length" class="history-empty">まだ抽選結果はありません</p>
+      </aside>
+    </main>
+  </div>
+
+  <script src="../__origin/js/vue3.min.js"></script>
+  <script src="../__origin/js/onesdk.js"></script>
+  <script src="./config_default.js"></script>
+  <script src="./config.js"></script>
+  <script src="./settings/config-runtime.js"></script>
+  <script src="./dictionaries.js"></script>
+  <script src="./lib/vct_one_core.js"></script>
+  <script src="./settings/settings-launcher.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!-- VCT Comment Roulette V1 - Config Editor -->
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCT Comment Roulette V1 - Config File Editor</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #ffd700;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--panel-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .help {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        input[type="color"],
+        select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        input[type="color"] {
+            padding: 4px;
+            height: 42px;
+            width: 70px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+        }
+
+        .actions {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        button {
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--border-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .footer-note b {
+            color: var(--accent-color);
+        }
+
+        .status-note {
+            margin-top: 18px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .status-note.is-ok {
+            color: #86efac;
+        }
+
+        .status-note.is-error {
+            color: #fca5a5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>VCT Comment Roulette V1</h1>
+            <div class="subtitle">config.js File Editor</div>
+        </header>
+
+        <div id="controls">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="actions">
+            <button class="btn-secondary" onclick="resetDefaults()">デフォルトに戻す</button>
+            <button class="btn-secondary" onclick="openConfigFile()">config.jsを開く</button>
+            <button class="btn-primary" onclick="saveConfigFile()">config.jsへ上書き保存</button>
+            <button class="btn-primary" onclick="downloadConfig()">config.jsをダウンロード</button>
+        </div>
+        <div id="statusNote" class="status-note"></div>
+    </div>
+
+    <div class="footer-note">
+        わんコメのカスタムテンプレート置き場やブラウザのセキュリティ設定により、<b>config.jsを開く</b> / <b>上書き保存</b> が使えない場合があります。<br>
+        確実な方法は <b>config.jsをダウンロード</b> して、テンプレートフォルダ内の <b>config.js</b> と入れ替えることです。
+    </div>
+
+    <script>
+        const CONFIG_SCHEMA = {
+            general: {
+                title: '基本設定',
+                fields: {
+                    TITLE: { type: 'text', label: 'タイトル' },
+                    WAITING_TEXT: { type: 'text', label: '待機中メッセージ' },
+                    HISTORY_TITLE: { type: 'text', label: '履歴タイトル' },
+                    TRIGGER_COMMANDS: { type: 'text', label: '起動コマンド（カンマ区切り）' },
+                    SHOW_HISTORY: { type: 'checkbox', label: '履歴を表示' },
+                    HISTORY_MAX: { type: 'number', label: '履歴件数' }
+                }
+            },
+            trigger: {
+                title: '自動起動',
+                fields: {
+                    AUTO_TRIGGER: { type: 'checkbox', label: '通常コメントから自動起動' },
+                    AUTO_TRIGGER_RATE: { type: 'range', min: 0, max: 1, step: 0.01, label: '自動起動確率' },
+                    AUTO_TRIGGER_COOLDOWN_MS: { type: 'number', label: 'クールダウン (ms)' }
+                }
+            },
+            roulette: {
+                title: 'ルーレット',
+                fields: {
+                    MIN_SLOTS: { type: 'number', label: '最小枠数 (1-12)' },
+                    MAX_SLOTS: { type: 'number', label: '最大枠数 (1-12)' },
+                    MIN_SPIN_CYCLES: { type: 'number', label: '最低巡回数' },
+                    INTRO_DURATION_MS: { type: 'number', label: '一覧表示時間 (ms)' },
+                    SPIN_DURATION_MS: { type: 'number', label: '巡回時間 (ms)' },
+                    RESULT_DISPLAY_MS: { type: 'number', label: '結果表示時間 (ms)' }
+                }
+            },
+            appearance: {
+                title: '表示',
+                fields: {
+                    FONT_FAMILY: { type: 'text', label: 'フォント' },
+                    ACCENT_COLOR: { type: 'color', label: 'アクセント色' },
+                    SECONDARY_COLOR: { type: 'color', label: 'サブ色' },
+                    PANEL_BG: { type: 'text', label: 'パネル背景' },
+                    TEXT_COLOR: { type: 'color', label: '文字色' },
+                    DEBUG: { type: 'checkbox', label: 'デバッグログ' }
+                }
+            }
+        };
+
+        let currentConfig = {};
+        let configFileHandle = null;
+
+        const FILE_PICKER_OPTIONS = {
+            id: 'vct-comment-roulette-v1-config',
+            types: [
+                {
+                    description: 'JavaScript config file',
+                    accept: { 'text/javascript': ['.js'] }
+                }
+            ],
+            excludeAcceptAllOption: false
+        };
+
+        function init() {
+            const baseConfig = window.CONFIG || {};
+
+            loadConfigObject(baseConfig);
+            render();
+            setStatus(
+                supportsFileSystemAccess()
+                    ? '現在の config.js を読み込みました。直接上書き保存はブラウザや配置場所により失敗する場合があります。確実に反映する場合はダウンロード保存を使用してください。'
+                    : 'この環境では直接読み書きに未対応です。config.jsをダウンロードして差し替えてください。'
+            );
+        }
+
+        function getDefaultValue(field) {
+            if (field.type === 'checkbox') return false;
+            if (field.type === 'number' || field.type === 'range') return 0;
+            if (field.type === 'select') return field.options[0];
+            return '';
+        }
+
+        function render() {
+            const container = document.getElementById('controls');
+            let html = '';
+
+            for (const section of Object.values(CONFIG_SCHEMA)) {
+                html += `
+                    <div class="section">
+                        <div class="section-title">${section.title}</div>
+                        <div class="grid">
+                `;
+
+                for (const [key, field] of Object.entries(section.fields)) {
+                    const val = currentConfig[key];
+                    html += `<div class="field">`;
+                    html += `<label for="${key}">${field.label}</label>`;
+
+                    if (field.type === 'checkbox') {
+                        html += `
+                            <div class="field-row">
+                                <input type="checkbox" id="${key}" ${val ? 'checked' : ''} onchange="updateVal('${key}', this.checked)">
+                                <span class="help">${field.help}</span>
+                            </div>
+                        `;
+                    } else if (field.type === 'select') {
+                        html += `
+                            <select id="${key}" onchange="updateVal('${key}', this.value)">
+                                ${field.options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('')}
+                            </select>
+                            <span class="help">${field.help}</span>
+                        `;
+                    } else if (field.type === 'range') {
+                        html += `
+                            <div class="field-row">
+                                <input type="range" id="${key}" min="${field.min}" max="${field.max}" step="${field.step}" value="${val}" 
+                                       oninput="document.getElementById('${key}_preview').innerText = this.value; updateVal('${key}', parseFloat(this.value))">
+                                <span id="${key}_preview" style="min-width: 40px; text-align: right; font-family: monospace;">${val}</span>
+                            </div>
+                            <span class="help">${field.help}</span>
+                        `;
+                    } else if (field.type === 'color') {
+                        const hexVal = (val && val.startsWith('#')) ? val : '#ffffff';
+                        html += `
+                            <div class="field-row">
+                                <input type="color" id="${key}_picker" value="${hexVal}" oninput="document.getElementById('${key}').value = this.value; updateVal('${key}', this.value)">
+                                <input type="text" id="${key}" value="${val}" oninput="updateVal('${key}', this.value)" style="width: 100px; font-family: monospace;">
+                            </div>
+                            <span class="help">${field.help}</span>
+                        `;
+                    } else {
+                        html += `
+                            <input type="${field.type}" id="${key}" value="${val}" oninput="updateVal('${key}', this.type === 'number' ? parseFloat(this.value) : this.value)">
+                            <span class="help">${field.help}</span>
+                        `;
+                    }
+
+                    html += `</div>`;
+                }
+
+                html += `</div></div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function setStatus(message, state = '') {
+            const el = document.getElementById('statusNote');
+            if (!el) return;
+            el.textContent = message || '';
+            el.classList.toggle('is-ok', state === 'ok');
+            el.classList.toggle('is-error', state === 'error');
+        }
+
+        function supportsFileSystemAccess() {
+            return typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function';
+        }
+
+        function loadConfigObject(config) {
+            const baseConfig = config || {};
+            currentConfig = {};
+
+            for (const section of Object.values(CONFIG_SCHEMA)) {
+                for (const [key, field] of Object.entries(section.fields)) {
+                    currentConfig[key] = baseConfig[key] !== undefined ? baseConfig[key] : getDefaultValue(field);
+                }
+            }
+        }
+
+        function updateVal(key, val) {
+            currentConfig[key] = val;
+        }
+
+        function resetDefaults() {
+            if (confirm('すべての設定を初期状態（テンプレートの標準設定）に戻しますか？')) {
+                loadConfigObject(window.CONFIG_DEFAULT || {});
+                render();
+                setStatus('デフォルト設定を読み込みました。保存するまで config.js は変更されません。', 'ok');
+            }
+        }
+
+        function formatConfigValue(val) {
+            if (typeof val === 'string') {
+                return `"${val.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+            }
+
+            return String(val);
+        }
+
+        function findHelpText(key) {
+            for (const s of Object.values(CONFIG_SCHEMA)) {
+                if (s.fields[key]) return s.fields[key].help;
+            }
+            return "";
+        }
+
+        function generateConfigContent() {
+            let content = "// VCT Comment Roulette V1 config.js\n";
+            content += "window.CONFIG = {\n";
+
+            const entries = Object.entries(currentConfig);
+            entries.forEach(([key, val], index) => {
+                const formattedVal = formatConfigValue(val);
+                const helpText = findHelpText(key);
+
+                const comma = (index === entries.length - 1) ? "" : ",";
+                const padding = " ".repeat(Math.max(1, 25 - key.length));
+                content += `  ${key}:${padding}${formattedVal}${comma}${" ".repeat(Math.max(1, 20 - String(formattedVal).length))}// ${helpText}\n`;
+            });
+
+            content += "};\n";
+            return content;
+        }
+
+        function parseConfigContent(content) {
+            const sandbox = {};
+            const config = Function('window', `${content}\n; return window.CONFIG;`)(sandbox);
+            if (!config || typeof config !== 'object') {
+                throw new Error('window.CONFIG が見つかりませんでした。');
+            }
+            return config;
+        }
+
+        async function openConfigFile() {
+            if (!supportsFileSystemAccess()) {
+                setStatus('この環境では config.js の直接読み書きに対応していません。ダウンロード保存を使用してください。', 'error');
+                return;
+            }
+
+            try {
+                const [handle] = await window.showOpenFilePicker(FILE_PICKER_OPTIONS);
+                const file = await handle.getFile();
+                const text = await file.text();
+                const config = parseConfigContent(text);
+                configFileHandle = handle;
+                loadConfigObject(config);
+                render();
+                setStatus(`${file.name} を読み込みました。このファイルへ上書き保存できます。`, 'ok');
+            } catch (err) {
+                if (err?.name === 'AbortError') return;
+                console.error(err);
+                setStatus(`config.js の読み込みに失敗しました: ${err?.message || err}`, 'error');
+            }
+        }
+
+        async function verifyWritablePermission(handle) {
+            const options = { mode: 'readwrite' };
+            if ((await handle.queryPermission(options)) === 'granted') return true;
+            return (await handle.requestPermission(options)) === 'granted';
+        }
+
+        async function saveConfigFile() {
+            if (!supportsFileSystemAccess()) {
+                setStatus('この環境では直接上書き保存に未対応です。config.jsをダウンロードして差し替えてください。', 'error');
+                return;
+            }
+
+            try {
+                if (!configFileHandle) {
+                    configFileHandle = await window.showSaveFilePicker({
+                        ...FILE_PICKER_OPTIONS,
+                        suggestedName: 'config.js'
+                    });
+                }
+
+                if (!(await verifyWritablePermission(configFileHandle))) {
+                    setStatus('config.js への書き込み権限が許可されませんでした。', 'error');
+                    return;
+                }
+
+                const writable = await configFileHandle.createWritable();
+                await writable.write(generateConfigContent());
+                await writable.close();
+                setStatus('config.js を上書き保存しました。OBSなどのブラウザソースを再読み込みすると反映されます。', 'ok');
+            } catch (err) {
+                if (err?.name === 'AbortError') return;
+                console.error(err);
+                setStatus(`config.js の保存に失敗しました: ${err?.message || err}`, 'error');
+            }
+        }
+
+        function downloadConfig() {
+            const content = generateConfigContent();
+            const blob = new Blob([content], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'config.js';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(init, 100);
+        });
+    </script>
+    <script src="./config_default.js"></script>
+    <script src="./config.js"></script>
+</body>
+
+</html>
