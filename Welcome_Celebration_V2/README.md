@@ -92,3 +92,10 @@ ENABLED_EVENT_KINDS: [
 - 旧仕様系 V1-v1.1.0 ではなく、VCT SDK structured event 方式を採用
 - `VCT.parseStructured()` の `event.kind` を利用
 - OneSDK の `comments` を受け取り、対象イベントのみ演出します
+
+
+## ライセンス
+
+MIT LICENSE
+
+本テンプレートは改造・再配布自由です。
