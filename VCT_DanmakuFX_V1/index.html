@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>VCT DanmakuFX V1</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body hidden>
+
+  <!-- DanmakuFX Canvas layer -->
+  <canvas id="fx"></canvas>
+
+  <!-- Debug comment log layer -->
+  <div id="container" class="container">
+    <div class="comments"></div>
+  </div>
+
+  <!-- OneComme -->
+  <script src="../__origin/js/onesdk.js"></script>
+
+  <!-- Config -->
+  <script src="./config.js"></script>
+
+  <!-- VCT Core SDK -->
+  <script>
+    window.VCT_CORE_PATHS = [
+      "./_lib/vct_one_core.js",
+      "../_vct_core/js/vct_one_core.js"
+    ];
+  </script>
+
+  <!-- Load parser / engine / fx / script after VCT SDK resolution -->
+  <script src="./vct-loader.js"></script>
+
+</body>
+
+</html>

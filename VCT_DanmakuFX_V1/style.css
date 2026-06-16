@@ -1,0 +1,45 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: "Segoe UI", sans-serif;
+}
+
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.comments {
+  display: var(--show-comments, block);
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  width: min(420px, calc(100vw - 24px));
+  max-height: 35vh;
+  flex-direction: column-reverse;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.comment {
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  opacity: 0.8;
+}
+
+.comment-name {
+  color: var(--user-color, #fff);
+  font-weight: 700;
+}
+
+.comment-text {
+  word-break: break-word;
+}
