@@ -62,6 +62,7 @@
     const style = structured?.style || {};
     const user = structured?.user || {};
     const message = structured?.message || {};
+    const translation = structured?.translation || {};
     const event = structured?.event || {};
     const isSupport = !!event.isSupport;
     const isMembership = !!event.isMembership;
@@ -76,6 +77,8 @@
       badges: user.badges || structured?.badges || [],
       messageText: message.text || fallbackMessage.text || "",
       messageParts,
+      translationText: translation.available ? translation.text || "" : "",
+      translationParts: translation.available && Array.isArray(translation.parts) ? translation.parts : [],
       colorStr: style.colorStr || style.color || "",
       isSpecial: !!(isSupport || isMembership || system.isSticky),
       userFlags: {
@@ -270,12 +273,37 @@
     return event.shouldShowMessage !== false;
   }
 
+  function getActiveMessageParts(comment, config) {
+    const mode = String(config.COMMENT_TRANSLATION_MODE || "original").toLowerCase();
+    const translatedParts = Array.isArray(comment.translationParts) && comment.translationParts.length > 0
+      ? comment.translationParts
+      : [];
+
+    if (mode === "translated" && translatedParts.length > 0) {
+      return translatedParts;
+    }
+
+    return Array.isArray(comment.messageParts) && comment.messageParts.length > 0
+      ? comment.messageParts
+      : [{ type: "text", content: comment.messageText || "" }];
+  }
+
+  function getActiveMessageText(comment, config) {
+    const mode = String(config.COMMENT_TRANSLATION_MODE || "original").toLowerCase();
+    if (mode === "translated" && comment.translationText) {
+      return comment.translationText;
+    }
+
+    return comment.messageText || "";
+  }
+
   function createGiftCardData(comment, config) {
     const maxChars = Math.max(12, Number(config.MAX_COMMENT_CHARS) || 42);
-    const stickerPart = (comment.messageParts || []).find((part) => part?.type === "emoji" && part.isSticker && part.url);
+    const activeParts = getActiveMessageParts(comment, config);
+    const stickerPart = activeParts.find((part) => part?.type === "emoji" && part.isSticker && part.url);
     const imageUrl = comment.support?.imageUrl || stickerPart?.url || "";
     const message = shouldShowEventMessage(comment, config)
-      ? normalizeTextFromParts(comment.messageParts) || comment.messageText || ""
+      ? normalizeTextFromParts(activeParts) || getActiveMessageText(comment, config) || ""
       : "";
     return {
       label: getSupportDisplayText(comment) || "ギフト",
@@ -329,9 +357,7 @@
       return;
     }
 
-    const parts = Array.isArray(comment.messageParts) && comment.messageParts.length > 0
-      ? comment.messageParts
-      : [{ type: "text", content: comment.messageText || "" }];
+    const parts = getActiveMessageParts(comment, config);
 
     if (supportText && supportMode === "before") {
       appendTextPart(parent, `${supportText} `);
@@ -370,7 +396,7 @@
     }
 
     if (!parent.childNodes.length) {
-      appendTextPart(parent, truncate(normalizeTextFromParts(parts) || comment.messageText || "", maxChars));
+      appendTextPart(parent, truncate(normalizeTextFromParts(parts) || getActiveMessageText(comment, config) || "", maxChars));
     }
 
     if (supportText && supportMode === "after") {

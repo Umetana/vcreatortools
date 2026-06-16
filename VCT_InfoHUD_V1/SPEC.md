@@ -366,6 +366,7 @@ LOG_ROW_GAP
 MAX_COMMENT_CHARS
 SHOW_IMAGE_EMOJI
 SHOW_STICKERS
+COMMENT_TRANSLATION_MODE
 EMOJI_SIZE_RATIO
 STICKER_SIZE_RATIO
 SUPPORT_AMOUNT_DISPLAY
@@ -473,6 +474,8 @@ v0.9.8-dev
 モデレーターコメントに MOD バッジを追加。
 MOD バッジは青系背景、白文字で表示する。
 isOwner と isModerator が同時に true の場合は OWNER を優先し、MOD は表示しない。
+同梱 vct_one_core.js を v1.2.3 に更新する。
+COMMENT_TRANSLATION_MODE に original / translated を追加し、YouTube自動翻訳があるコメントのログ本文表示を切り替えられるようにする。
 
 v0.9.7-dev
 

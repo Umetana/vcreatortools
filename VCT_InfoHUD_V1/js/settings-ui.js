@@ -151,6 +151,7 @@
     setSelectedRadio("metricSource", config.METRIC_SOURCE, "auto");
     setSelectedRadio("metricLayout", config.METRIC_LAYOUT, "default");
     setSelectedRadio("supportAmountDisplay", config.SUPPORT_AMOUNT_DISPLAY, "badge");
+    setSelectedRadio("commentTranslationMode", config.COMMENT_TRANSLATION_MODE, "original");
     setSelectedRadio("fontPreset", config.FONT_PRESET, "gothic");
   }
 
@@ -192,6 +193,9 @@
     next.METRIC_SOURCE = getSelectedRadio("metricSource", "auto");
     next.METRIC_LAYOUT = getSelectedRadio("metricLayout", "default");
     next.SUPPORT_AMOUNT_DISPLAY = getSelectedRadio("supportAmountDisplay", "badge");
+    next.COMMENT_TRANSLATION_MODE = getSelectedRadio("commentTranslationMode", "original") === "translated"
+      ? "translated"
+      : "original";
     next.FONT_PRESET = getSelectedRadio("fontPreset", "gothic");
     next.FONT_FAMILY = FONT_FAMILIES[next.FONT_PRESET] || FONT_FAMILIES.gothic;
     return next;
