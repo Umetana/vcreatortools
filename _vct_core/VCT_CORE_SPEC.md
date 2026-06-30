@@ -9,7 +9,7 @@ v0.3.0 では、見た目と公開Facadeを大きく変えずに内部責務を�
 ## 2. バージョン系統
 
 - VCT Core `v0.3.0`: runtime / ui / logger を含む Core テンプレート全体の版
-- VCT SDK `v1.2.2`: `vct_one_core.js` の版
+- VCT SDK `v1.2.4-dev`: `vct_one_core.js` の版
 - VCT_IDB wrapper `v0.5.0` 系: IndexedDB facade の仕様版
 
 VCT Core 本体版と VCT_IDB wrapper 仕様版は別系統です。
@@ -158,7 +158,7 @@ CSS は `style.css` に分離済みです。
 以下は維持します。
 
 - `window.VCT_IDB` の公開名
-- `window.VCT.parse()` の基本挙動
+- `window.VCT.parse()` の公開名。ただし `text` は表示用互換層とし、金額表示などを混ぜない
 - VCT Core 内部処理では `parseCore()` と `event` を正規の判定基準として使う
 - `supports` / `users` の保存構造
 - legacy migration
@@ -166,6 +166,7 @@ CSS は `style.css` に分離済みです。
 
 ## 8. 変更履歴
 
+- **v0.3.1-dev / SDK v1.2.4-dev**: `VCT.parse().text` への `paidText` 補完を廃止。判定用途は `parseStructured().message` / `event` / `monetization` を優先する方針を明記。
 - **v0.3.1-dev**: users に `lastSeenStreamId` / `recentStreamIds` を追加。runtime から User レコードへ `streamId` を注入。VCT SDK v1.2.0 の `parseCore().event` を保存判定の基準に変更。
 - **v0.3.0**: runtime / ui / logger を分離。`main.js` を boot 専用化。User / Support レコード生成を `VCT` 側へ移動。`style.css` を分離。
 - **v0.2**: Core監視UIとDB保守操作を追加。

@@ -1,11 +1,11 @@
 /**
- * V-Creator Tools: OneComme Core SDK (VCT) v1.2.4-dev
+ * V-Creator Tools: OneComme Core SDK (VCT) v1.2.3
  * 
  * 共通のコメント解析ロジックを提供し、各テンプレートのコードを簡略化します。
  */
 
 window.VCT = (function () {
-    const VERSION = '1.2.4-dev';
+    const VERSION = '1.2.3';
     const DEFAULT_COLOR = { r: 255, g: 255, b: 255 };
 
     /**
@@ -509,7 +509,11 @@ window.VCT = (function () {
             }
         }
 
-        const legacyComment = baseComment;
+        // Legacy互換用の本文は従来通り paidText を末尾へ補完する
+        let legacyComment = baseComment;
+        if (data?.hasGift && data.paidText && !legacyComment.includes(data.paidText)) {
+            legacyComment += ` ${data.paidText}`;
+        }
 
         const baseContent = parseHtml(baseComment);
         const parsedContent = parseHtml(legacyComment);

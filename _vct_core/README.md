@@ -5,7 +5,7 @@
 ## 現在の版
 
 - VCT Core: `v0.3.1-dev`
-- VCT OneComme Core SDK: `v1.2.2`
+- VCT SDK(vct_one_core.js): `v1.2.4-dev`
 - VCT_IDB wrapper 仕様: `v0.5.0` 系由来
 
 `VCT_IDB` の仕様版と VCT Core 本体版は別系統です。
@@ -30,5 +30,11 @@
 - User / Support レコード生成を `VCT` 側へ移動
 - `streamId` は runtime で確定し、保存前にレコードへ注入
 - `window.VCT_IDB` の既存Facadeは維持
+
+## SDK方針
+
+- 新規開発では `parseStructured()` の `message` / `event` / `monetization` を優先します。
+- `VCT.parse()` の `text` は表示用互換層として扱い、コマンド判定やDB保存の主入力にはしません。
+- v1.2.3 のLegacy互換版は `../__archive/vct_sdk/` に退避しています。
 
 詳細は [VCT_CORE_SPEC.md](./VCT_CORE_SPEC.md) を参照してください。
