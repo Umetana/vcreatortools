@@ -162,7 +162,9 @@ textarea {
 .settings-pages {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
 }
 
 .settings-page {
@@ -188,8 +190,12 @@ textarea {
   grid-template-columns: 360px 360px 360px;
 }
 
-.settings-grid--metric,
 .settings-grid--log {
+  grid-template-columns: 360px 360px 360px;
+  align-items: start;
+}
+
+.settings-grid--metric {
   grid-template-columns: 360px 360px;
 }
 
