@@ -7,6 +7,10 @@
   --text-name: #eeeeee;
   --accent-color: #ffd700;
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --base-border-color: #ffffff;
+  --base-border-opacity: 0.15;
+  --base-border-width: 1px;
+  --system-border-opacity: 0.35;
 }
 
 /* --- エラーマーク対策の追記 --- */
@@ -73,7 +77,7 @@ body {
   background: var(--bg-glass);
   backdrop-filter: blur(var(--bg-blur));
   -webkit-backdrop-filter: blur(var(--bg-blur));
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: var(--base-border-width) solid color-mix(in srgb, var(--base-border-color) calc(var(--base-border-opacity) * 100%), transparent);
   border-radius: 12px;
   box-shadow: var(--shadow-soft);
   color: var(--text-main);
@@ -98,7 +102,7 @@ body {
 }
 
 .cmt-system {
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: color-mix(in srgb, #ffffff calc(var(--system-border-opacity) * 100%), transparent);
 }
 
 .cmt__icon {

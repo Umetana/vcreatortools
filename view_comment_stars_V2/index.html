@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>view comment stars v2.0.0-dev</title>
+  <title>view comment stars v2.7.2-dev</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 
@@ -60,7 +60,7 @@
           </div>
 
           <!-- 星降り演出レイヤー -->
-          <div v-if="cmt.stars && cmt.stars.length" class="cmt__stars">
+          <div v-if="config.STAR_MODE !== 'off' && cmt.stars && cmt.stars.length" class="cmt__stars">
             <span v-for="s in cmt.stars" :key="s.id" class="cmt__star" :style="{
                 left: s.x + '%',
                 top: s.y + '%',
@@ -83,9 +83,15 @@
   <script src="../__origin/js/vue3.min.js"></script>
   <script src="../__origin/js/onesdk.js"></script>
 
+  <!-- 設定読込順: default -> config.js -> localStorage -->
+  <script src="./config_default.js"></script>
   <script src="./config.js"></script>
+  <script src="./settings/config-runtime.js"></script>
   <!-- V-Creator Tools: VCT SDK -->
   <script src="./lib/vct_one_core.js"></script>
+
+  <!-- 設定パネル本体はギアクリック時に遅延読込 -->
+  <script src="./settings/settings-launcher.js"></script>
 
   <!-- comment stars main.js -->
   <script src="./main.js"></script>

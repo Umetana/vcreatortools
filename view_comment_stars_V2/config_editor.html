@@ -1,11 +1,11 @@
-<!-- View Comment Stars V2 - Config Editor -->
+<!-- View Comment Stars V2.7.2 - Config Editor -->
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Comment Stars V2 - Settings Editor</title>
+    <title>View Comment Stars V2.7.2 - Config File Editor</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -216,7 +216,7 @@
 
     <div class="container">
         <header>
-            <h1>View Comment Stars V2</h1>
+            <h1>View Comment Stars V2.7.2</h1>
             <div class="subtitle">Settings Editor</div>
         </header>
 
@@ -317,6 +317,10 @@
                 fields: {
                     BG_GLASS: { type: 'text', label: '背景色', help: 'rgba(0,0,0,0.45) 形式など' },
                     BG_BLUR: { type: 'text', label: 'ぼかし強度', help: '背景の透過ぼかし (例: 12px)' },
+                    BASE_BORDER_COLOR: { type: 'color', label: '通常枠線色', help: '通常コメント枠の線色' },
+                    BASE_BORDER_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '通常枠線の濃さ', help: '0で通常コメントの枠線を透明にします' },
+                    BASE_BORDER_WIDTH: { type: 'number', label: '通常枠線の太さ (px)', help: '通常コメント枠の線幅' },
+                    SYSTEM_BORDER_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '固定コメント枠線', help: '0で固定コメントの枠線を透明にします' },
                     TEXT_MAIN: { type: 'color', label: '本文文字色', help: 'メッセージの色' },
                     TEXT_NAME: { type: 'color', label: '名前文字色', help: 'ユーザー名のデフォルト色' },
                     ACCENT_COLOR: { type: 'color', label: 'アクセントカラー', help: 'ギフト等の基本ハイライト色' },
@@ -330,7 +334,7 @@
         let configFileHandle = null;
 
         const FILE_PICKER_OPTIONS = {
-            id: 'view-comment-stars-v2-config',
+            id: 'view-comment-stars-v2-7-config',
             types: [
                 {
                     description: 'JavaScript config file',
@@ -474,7 +478,7 @@
         }
 
         function generateConfigContent() {
-            let content = "// view comment stars v2 config.js\n";
+            let content = "// view comment stars v2.7.2 config.js\n";
             content += "window.CONFIG = {\n";
 
             const entries = Object.entries(currentConfig);

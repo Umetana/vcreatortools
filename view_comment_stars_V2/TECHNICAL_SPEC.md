@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - UI Framework: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
+- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.6-dev
 - Styling: Vanilla CSS + CSS Variables
 
 ## 2. フォルダ構成
@@ -16,7 +16,12 @@
 - `config.js`: 実際に読み込まれる設定。
 - `config_default.js`: 設定エディタのデフォルト復元用設定。
 - `config_editor.html`: 設定変更用UI。
-- `lib/vct_one_core.js`: VCT SDK v1.2.3。
+- `settings/config-runtime.js`: default、config.js、localStorageを合成して最終設定を確定。
+- `settings/settings-launcher.js`: 右下ギアと設定UIの遅延読み込みを担当。
+- `settings/settings-schema.js`: 画面内設定パネルの項目定義。
+- `settings/settings-panel.js`: 設定パネルDOM、ファイル読込、localStorage保存を担当。
+- `settings/settings-panel.css`: 設定パネル専用スタイル。ギアクリック時に読み込む。
+- `lib/vct_one_core.js`: VCT SDK v1.2.6-dev。
 
 ## 3. データ処理
 
@@ -36,7 +41,52 @@ OWNER/MOD は `buildUserFlags()` で表示用データに変換します。`isOw
 
 ギフト系コメントは `GIFT_BG_OPACITY` / `GIFT_BORDER_OPACITY`、メンバー系コメントは `MEMBER_BG_OPACITY` / `MEMBER_BORDER_OPACITY` で背景と枠線の濃度を個別に調整できます。
 
-## 4. 星降り演出
+## 4. 設定ランタイム
+
+`index.html` は以下の順序で設定スクリプトを読み込みます。
+
+1. `config_default.js`
+2. `config.js`
+3. `settings/config-runtime.js`
+4. `main.js`
+
+`config-runtime.js` は次の順序でオブジェクトをマージし、最終結果を `window.CONFIG` に設定します。
+
+```javascript
+window.CONFIG = {
+  ...window.CONFIG_DEFAULT,
+  ...configFileValues,
+  ...localStorageOverrides
+};
+```
+
+localStorageには全設定ではなく、`config_default.js + config.js` の基準値との差分だけを保存します。保存キーはテンプレートフォルダ名から自動生成します。
+
+```text
+vct.template-settings.<template-folder>.v1
+```
+
+## 5. 画面内設定パネル
+
+`settings-launcher.js` だけは起動時に読み込みます。ギアをクリックするまでは `settings-schema.js`、`settings-panel.js`、`settings-panel.css` を読み込みません。
+
+設定の確定反映は、localStorageへ保存後にページを再読み込みして行います。
+設定パネルから `vct-settings-preview` カスタムイベントを送信し、`main.js` 内のリアクティブ設定へ一時反映します。パネルを閉じると `vct-settings-reset-preview` を送信して起動時設定へ戻します。
+
+主にCSS変数やVueの表示条件で制御される項目は即時プレビューできます。本文上限、イベント本文フィルター、自動非表示タイマー、星粒の生成条件など、コメント受信時の正規化・演出生成に関わる項目は、新規コメントまたは保存後再読み込みで完全適用されます。
+
+### 透明表示
+
+通常コメント枠は以下の設定を使用します。
+
+- `BASE_BORDER_COLOR`
+- `BASE_BORDER_OPACITY`
+- `BASE_BORDER_WIDTH`
+- `SYSTEM_BORDER_OPACITY`
+
+`BG_GLASS` を透明色にし、各背景・枠線濃度を `0`、`SHADOW_SOFT` を `none` にすると、別ソースの画像などを背景として重ねやすい表示になります。設定パネルの `背景・枠を透明` はこの組み合わせを一括でフォームへ読み込みます。
+
+## 6. 星降り演出
 
 コメント追加時に `buildStars(comment)` が `STAR_MODE` を参照し、星データを生成します。
 
@@ -49,7 +99,7 @@ OWNER/MOD は `buildUserFlags()` で表示用データに変換します。`isOw
 
 `STAR_DIRECTION` は `down-right` / `down-left` / `random` に対応します。CSSの `@keyframes star-shower` で、コメント上部から斜めに落下しながら明滅・軽い色相変化を行います。
 
-## 5. 調整ポイント
+## 7. 調整ポイント
 
 - 星を増やす: `STAR_COUNT`
 - 色味を変える: `STAR_COLORS`

@@ -1,11 +1,12 @@
-// view comment stars v2.0.0-dev
+// view comment stars v2.7.2-dev
 
-const { createApp, ref, computed, onMounted } = window.Vue || Vue;
+const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount } = window.Vue || Vue;
 
 createApp({
   setup() {
     const comments = ref([]);
-    const C = window.CONFIG || {};
+    const C = reactive({ ...(window.CONFIG || {}) });
+    const appliedConfig = { ...(window.CONFIG || {}) };
 
     const updateStyle = () => {
       const root = document.documentElement;
@@ -24,6 +25,10 @@ createApp({
 
       root.style.setProperty('--bg-glass', C.BG_GLASS || 'rgba(0, 0, 0, 0.45)');
       root.style.setProperty('--bg-blur', C.BG_BLUR || '12px');
+      root.style.setProperty('--base-border-color', C.BASE_BORDER_COLOR || '#ffffff');
+      root.style.setProperty('--base-border-opacity', (C.BASE_BORDER_OPACITY !== undefined ? C.BASE_BORDER_OPACITY : 0.15));
+      root.style.setProperty('--base-border-width', (C.BASE_BORDER_WIDTH !== undefined ? C.BASE_BORDER_WIDTH : 1) + 'px');
+      root.style.setProperty('--system-border-opacity', (C.SYSTEM_BORDER_OPACITY !== undefined ? C.SYSTEM_BORDER_OPACITY : 0.35));
       root.style.setProperty('--text-main', C.TEXT_MAIN || '#ffffff');
       root.style.setProperty('--text-name', C.TEXT_NAME || '#eeeeee');
       root.style.setProperty('--accent-color', C.ACCENT_COLOR || '#ffd700');
@@ -40,6 +45,25 @@ createApp({
       const dir = (C.STACK_DIRECTION || 'up').toLowerCase();
       return dir === 'down' ? 'stack-down' : 'stack-up';
     });
+
+    const applyPreviewConfig = (nextConfig) => {
+      if (!nextConfig || typeof nextConfig !== 'object') return;
+      Object.assign(C, nextConfig);
+      updateStyle();
+
+      const maxItems = Math.max(1, Number(C.MAX_ITEMS || 10));
+      if (comments.value.length > maxItems) {
+        comments.value.splice(0, comments.value.length - maxItems);
+      }
+    };
+
+    const handleSettingsPreview = (event) => {
+      applyPreviewConfig(event.detail);
+    };
+
+    const handleSettingsReset = () => {
+      applyPreviewConfig(appliedConfig);
+    };
 
     const extractMembershipMonths = (parsed) => {
       const membership = parsed?.membership || {};
@@ -337,6 +361,8 @@ createApp({
 
     onMounted(() => {
       updateStyle();
+      window.addEventListener('vct-settings-preview', handleSettingsPreview);
+      window.addEventListener('vct-settings-reset-preview', handleSettingsReset);
       if (!window.OneSDK) {
         console.error('OneSDK not found.');
         return;
@@ -364,8 +390,13 @@ createApp({
 
       OneSDK.ready().then(() => {
         OneSDK.connect();
-        console.log(`View Comment Stars V2: Ready (Stack: ${C.STACK_DIRECTION || 'up'})`);
+        console.log(`View Comment Stars v2.7.2-dev: Ready (Stack: ${C.STACK_DIRECTION || 'up'})`);
       });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('vct-settings-preview', handleSettingsPreview);
+      window.removeEventListener('vct-settings-reset-preview', handleSettingsReset);
     });
 
     return {

@@ -1,4 +1,4 @@
-// view comment stars v2 config.js
+// view comment stars v2.7.2 config.js
 
 window.CONFIG = {
   // 表示設定
@@ -43,6 +43,10 @@ window.CONFIG = {
   // カラー・スタイル詳細設定
   BG_GLASS: "rgba(0, 0, 0, 0.45)", // コメント枠の背景色
   BG_BLUR: "12px",                // 背景のぼかし強度
+  BASE_BORDER_COLOR: "#ffffff",   // 通常コメント枠線の色
+  BASE_BORDER_OPACITY: 0.15,       // 通常コメント枠線の濃さ (0.0～1.0)
+  BASE_BORDER_WIDTH: 1,            // 通常コメント枠線の太さ (px)
+  SYSTEM_BORDER_OPACITY: 0.35,     // 固定コメント枠線の濃さ (0.0～1.0)
   TEXT_MAIN: "#ffffff",           // メイン文字色
   TEXT_NAME: "#eeeeee",           // 名前の文字色
   ACCENT_COLOR: "#ffd700",        // アクセントカラー（ギフト等のデフォルト色）
