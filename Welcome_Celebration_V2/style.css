@@ -58,6 +58,12 @@ body {
     linear-gradient(135deg, rgba(40, 130, 240, 0.78), rgba(36, 198, 150, 0.66) 52%, rgba(255, 220, 74, 0.62));
 }
 
+.celebration.tone-first-time::before {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.48), transparent 25%),
+    linear-gradient(135deg, rgba(30, 180, 230, 0.72), rgba(42, 210, 150, 0.58) 52%, rgba(255, 138, 216, 0.48));
+}
+
 .celebration-bg-text {
   position: absolute;
   left: 50%;
@@ -175,6 +181,13 @@ body {
   text-shadow:
     0 4px 0 #fff06a,
     0 10px 24px rgba(11, 117, 255, 0.26);
+}
+
+.tone-first-time .celebration-headline {
+  color: #10a7ff;
+  text-shadow:
+    0 4px 0 #fff06a,
+    0 10px 24px rgba(16, 167, 255, 0.24);
 }
 
 .celebration-event-label {
