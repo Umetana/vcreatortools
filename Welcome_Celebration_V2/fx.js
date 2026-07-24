@@ -79,13 +79,19 @@
   function particleColor(tone, index) {
     const join = ["#19d37b", "#f8f75a", "#ffffff", "#45d8ff", "#ff5ebc"];
     const milestone = ["#36b7ff", "#fff06a", "#ffffff", "#7cffc4", "#ff8ad8"];
-    const colors = tone === "milestone" ? milestone : join;
+    const firstTime = ["#45d8ff", "#ffffff", "#f8f75a", "#7cffc4", "#ff8ad8"];
+    const colors = tone === "milestone" ? milestone : (tone === "first-time" ? firstTime : join);
     return colors[index % colors.length];
   }
 
   function burst(event) {
+    const intensity = Number(event.intensity) || configNumber("FX_INTENSITY", 1);
+
     if (configBool("CONFETTI_ENABLED", true)) {
-      const count = Math.round(configNumber("CONFETTI_AMOUNT", 150) * configNumber("FX_INTENSITY", 1));
+      const baseAmount = Number.isFinite(Number(event.confettiAmount))
+        ? Number(event.confettiAmount)
+        : configNumber("CONFETTI_AMOUNT", 150);
+      const count = Math.round(baseAmount * intensity);
       for (let i = 0; i < count; i++) {
         particles.push({
           x: window.innerWidth * (0.12 + Math.random() * 0.76),
@@ -104,7 +110,10 @@
     }
 
     if (configBool("SPARKLES_ENABLED", true)) {
-      const count = Math.round(configNumber("SPARKLE_AMOUNT", 80) * configNumber("FX_INTENSITY", 1));
+      const baseAmount = Number.isFinite(Number(event.sparkleAmount))
+        ? Number(event.sparkleAmount)
+        : configNumber("SPARKLE_AMOUNT", 80);
+      const count = Math.round(baseAmount * intensity);
       for (let i = 0; i < count; i++) {
         sparkles.push({
           x: Math.random() * window.innerWidth,
@@ -126,7 +135,10 @@
     sparkles.length = 0;
 
     overlay.className = `celebration is-active tone-${event.tone || "join"}`;
-    card.style.setProperty("--card-scale", String(configNumber("CARD_SCALE", 1)));
+    const cardScale = Number.isFinite(Number(event.cardScale))
+      ? Number(event.cardScale)
+      : configNumber("CARD_SCALE", 1);
+    card.style.setProperty("--card-scale", String(cardScale));
     label.textContent = safeText(event.label, "NEW MEMBER");
     user.textContent = safeText(event.user, "Anonymous");
     headline.textContent = safeText(event.headline, "WELCOME!");
@@ -154,6 +166,14 @@
 
   function push(event) {
     if (!event || event.type !== "welcome-celebration") return;
+
+    if (event.kind === "first_time" && Number.isFinite(Number(event.maxQueue))) {
+      const maxSameKind = Math.max(0, Number(event.maxQueue));
+      const sameKindCount = queue.filter((item) => item?.kind === event.kind).length
+        + (current?.kind === event.kind ? 1 : 0);
+      if (sameKindCount >= maxSameKind) return;
+    }
+
     const maxQueue = Math.max(1, configNumber("MAX_QUEUE", 8));
     queue.push(event);
     while (queue.length > maxQueue) queue.shift();

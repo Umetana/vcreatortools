@@ -6,12 +6,13 @@ Welcome Celebration は、メンバーシップ加入や継続を全画面で派
 
 ## 対応イベント
 
-v2.0.0 の初期設定では、以下を対象にします。
+v2.1.0 の初期設定では、以下を対象にします。
 
 - `member_join`: メンバーシップ加入
 - `member_milestone`: メンバーシップ継続 / マイルストーンチャット
+- `first_time`: 初見コメント歓迎
 
-以下のイベント分類は VCT SDK (`vct_one_core.js`) v1.2.1 で判定できますが、初期設定では無効です。
+以下のイベント分類は VCT SDK (`vct_one_core.js`) v1.2.6-dev で判定できますが、初期設定では無効です。
 
 - `membership_gift`: メンバーシップギフト購入
 - `membership_gift_received`: メンバーシップギフト受取
@@ -37,6 +38,15 @@ v2.0.0 の初期設定では、以下を対象にします。
 - `THANK YOU!`
 - `メンバー歴 N か月` などのイベントラベル
 
+初見コメント時:
+
+- ユーザーアイコン
+- ユーザー名
+- `FIRST VISIT`
+- `WELCOME!`
+- `初見さん`
+- `はじめまして！`
+
 ## 設定
 
 設定は `config.js` で変更します。
@@ -55,6 +65,9 @@ CONFETTI_AMOUNT: 150,
 SPARKLES_ENABLED: true,
 SPARKLE_AMOUNT: 80,
 MAX_QUEUE: 8
+
+FIRST_TIME_MODE: "light",
+FIRST_TIME_COOLDOWN_MS: 15000
 ```
 
 主な項目:
@@ -68,6 +81,24 @@ MAX_QUEUE: 8
 - `SPARKLES_ENABLED`: キラキラのON/OFF
 - `SPARKLE_AMOUNT`: キラキラ量
 - `MAX_QUEUE`: 連続イベント時に保持する最大件数
+- `FIRST_TIME_MODE`: 初見歓迎モード。`off` / `light` / `party`
+- `FIRST_TIME_COOLDOWN_MS`: 初見演出の最短発動間隔
+
+## 初見歓迎モード
+
+初見コメントは `isFirstTime` / `userDetail.isFirstTime` をもとに判定します。ただしメンバー加入・継続などのイベントがある場合は、メンバーイベント側を優先します。
+
+```js
+FIRST_TIME_MODE: "light"
+```
+
+モード:
+
+- `off`: 初見コメントでは演出しない
+- `light`: デフォルト。短め、小さめ、紙吹雪少なめ
+- `party`: 初見でもかなり派手に歓迎する
+
+初見は配信内容によって頻度が高くなるため、`FIRST_TIME_COOLDOWN_MS` とプリセット内の `maxQueue` で詰まりすぎを抑制します。
 
 ## ギフト系の今後の有効化
 
@@ -88,7 +119,7 @@ ENABLED_EVENT_KINDS: [
 ## 動作基盤
 
 - `CommentFX_Base_v2_6` から派生
-- 同梱 `vct_one_core.js` は VCT SDK v1.2.1
+- 同梱 `vct_one_core.js` は VCT SDK v1.2.6-dev
 - 旧仕様系 V1-v1.1.0 ではなく、VCT SDK structured event 方式を採用
 - `VCT.parseStructured()` の `event.kind` を利用
 - OneSDK の `comments` を受け取り、対象イベントのみ演出します

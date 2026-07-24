@@ -1,11 +1,11 @@
 /**
- * V-Creator Tools: OneComme Core SDK (VCT) v1.2.1
+ * V-Creator Tools: OneComme Core SDK (VCT) v1.2.6-dev
  * 
  * 共通のコメント解析ロジックを提供し、各テンプレートのコードを簡略化します。
  */
 
 window.VCT = (function () {
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.6-dev';
     const DEFAULT_COLOR = { r: 255, g: 255, b: 255 };
 
     /**
@@ -129,6 +129,22 @@ window.VCT = (function () {
         return found ?? "";
     }
 
+    function buildTranslationInfo(data, sourceText) {
+        const html = String(data?.translated || '').trim();
+        const content = parseHtml(html);
+
+        return {
+            available: !!html,
+            text: content.text,
+            html,
+            parts: content.parts,
+            imgUrls: content.imgUrls,
+            sourceText: String(sourceText || '').trim(),
+            source: html ? 'youtube_auto_translation' : '',
+            visibility: html ? 'owner_only' : ''
+        };
+    }
+
     function extractFirstImageInfo(html) {
         if (!html) return { url: '', alt: '' };
 
@@ -146,13 +162,23 @@ window.VCT = (function () {
         }
     }
 
+    function extractJewelGiftName(text) {
+        const source = String(text || '').trim();
+        const match = source.match(/^\s*ジュエル\s*[\d,]+\s*個\s*を使って\s*(.+?)\s*を送りました\s*$/u);
+        return match ? match[1].trim() : '';
+    }
+
     function resolveSupportGift(support) {
         const { raw, data } = getCommentPayload(support);
         const imageInfo = extractFirstImageInfo(data?.comment || data?.message || '');
         const type = String(support?.giftType || support?.rawType || data?.giftType || raw?.type || '').trim();
+        const jewelGiftName = type.toLowerCase() === 'jewel'
+            ? extractJewelGiftName(parseHtml(data?.comment || data?.message || '').text)
+            : '';
         const label = String(
             support?.giftLabel ||
             support?.attachmentLabel ||
+            jewelGiftName ||
             data?.speechText ||
             imageInfo.alt ||
             ''
@@ -273,6 +299,18 @@ window.VCT = (function () {
                 category: 'support',
                 isSupport: true,
                 displayLabel: amountText || 'ステッカー'
+            };
+        }
+
+        if (giftType === 'jewel') {
+            const giftName = extractJewelGiftName(userText);
+            return {
+                ...base,
+                kind: 'jewel',
+                category: 'support',
+                isSupport: true,
+                displayLabel: giftName || 'ジュエル',
+                shouldShowMessage: true
             };
         }
 
@@ -421,7 +459,7 @@ window.VCT = (function () {
 
         return {
             platform: core.service?.id || raw?.service?.id || raw?.service || '',
-            userId: data?.userId || '',
+            userId: core.user?.id || data?.userId || '',
             userName: core.user?.displayName || 'Anonymous',
             displayName: core.user?.displayName || data?.displayName || data?.name || '',
             screenName: core.user?.screenName || '',
@@ -450,7 +488,7 @@ window.VCT = (function () {
         }
 
         const platform = core.service?.id || raw?.service?.id || raw?.service || '';
-        const userId = data?.userId || '';
+        const userId = core.user?.id || data?.userId || '';
         const userName = core.user?.displayName || 'Anonymous';
         const buildUserKey = typeof options.buildUserKey === 'function'
             ? options.buildUserKey
@@ -493,11 +531,7 @@ window.VCT = (function () {
             }
         }
 
-        // Legacy互換用の本文は従来通り paidText を末尾へ補完する
-        let legacyComment = baseComment;
-        if (data?.hasGift && data.paidText && !legacyComment.includes(data.paidText)) {
-            legacyComment += ` ${data.paidText}`;
-        }
+        const legacyComment = baseComment;
 
         const baseContent = parseHtml(baseComment);
         const parsedContent = parseHtml(legacyComment);
@@ -538,6 +572,7 @@ window.VCT = (function () {
                 name: raw?.service?.name || raw?.service?.id || raw?.service || ''
             },
             user: {
+                id: data?.userId || '',
                 name: data?.name || 'Anonymous',
                 displayName: data?.displayName || data?.name || 'Anonymous',
                 screenName: data?.screenName || null,
@@ -562,6 +597,7 @@ window.VCT = (function () {
                 legacyImgUrls: parsedContent.imgUrls,
                 command: vctCommand
             },
+            translation: buildTranslationInfo(data, baseContent.text),
             monetization: {
                 hasGift: !!data?.hasGift,
                 kind: data?.giftType || raw?.type || '',
@@ -624,6 +660,7 @@ window.VCT = (function () {
             id: core.id,
             service: core.service,
             user: {
+                id: core.user.id,
                 name: core.user.name,
                 displayName: core.user.displayName,
                 screenName: core.user.screenName,
@@ -644,6 +681,7 @@ window.VCT = (function () {
                 imgUrls: core.message.imgUrls,
                 command: core.message.command
             },
+            translation: core.translation,
             legacy: {
                 text: core.message.legacyText,
                 html: core.message.legacyHtml,

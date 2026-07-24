@@ -4,6 +4,8 @@
  */
 
 window.ENGINE = (function () {
+  let lastFirstTimeAt = 0;
+
   const EVENT_META = {
     member_join: {
       label: "NEW MEMBER",
@@ -16,6 +18,12 @@ window.ENGINE = (function () {
       headline: "THANK YOU!",
       message: "いつもありがとう",
       tone: "milestone"
+    },
+    first_time: {
+      label: "FIRST VISIT",
+      headline: "WELCOME!",
+      message: "はじめまして！",
+      tone: "first-time"
     }
   };
 
@@ -52,29 +60,84 @@ window.ENGINE = (function () {
       || meta.message;
   }
 
-  function onComment(comment) {
-    const kind = comment?.event?.kind || "";
-    const meta = EVENT_META[kind];
+  function getFirstTimePreset() {
+    const mode = window.CONFIG?.FIRST_TIME_MODE || "light";
+    const presets = window.CONFIG?.FIRST_TIME_PRESETS || {};
+    return presets[mode] || presets.light || { enabled: false };
+  }
 
-    if (!meta || !getEnabledKinds().has(kind)) return [];
+  function isFirstTimeComment(comment) {
+    if (!comment?.isFirstTime && !comment?.userDetail?.isFirstTime) return false;
 
-    return [{
+    const event = comment?.event || {};
+    const kind = event.kind || "";
+    const category = event.category || "";
+
+    return !event.isMembership
+      && !event.isSupport
+      && (kind === "" || kind === "normal" || category === "comment");
+  }
+
+  function shouldPlayFirstTime(comment) {
+    const preset = getFirstTimePreset();
+    if (!preset.enabled || !isFirstTimeComment(comment)) return false;
+
+    const cooldown = Number(window.CONFIG?.FIRST_TIME_COOLDOWN_MS) || 0;
+    const now = Date.now();
+    if (cooldown > 0 && now - lastFirstTimeAt < cooldown) return false;
+
+    lastFirstTimeAt = now;
+    return true;
+  }
+
+  function buildCelebrationEvent(comment, kind, meta, options = {}) {
+    return {
       type: "welcome-celebration",
       kind,
       tone: meta.tone,
       label: meta.label,
       headline: meta.headline,
-      message: resolveMembershipMessage(comment, meta),
-      eventLabel: resolveEventLabel(comment, meta),
+      message: options.message || resolveMembershipMessage(comment, meta),
+      eventLabel: options.eventLabel || resolveEventLabel(comment, meta),
       user: resolveDisplayName(comment),
       iconUrl: comment?.profileImage || "",
       color: comment?.color || { r: 11, g: 128, b: 67 },
       colorStr: comment?.colorStr || "rgb(11,128,67)",
-      life: window.CONFIG?.DISPLAY_DURATION || 5.0,
+      life: options.life || window.CONFIG?.DISPLAY_DURATION || 5.0,
+      cardScale: options.cardScale,
+      intensity: options.intensity,
+      confettiAmount: options.confettiAmount,
+      sparkleAmount: options.sparkleAmount,
+      maxQueue: options.maxQueue,
       event: comment?.event || null,
       structured: comment?.structured || null,
       raw: comment?.raw || null
-    }];
+    };
+  }
+
+  function onComment(comment) {
+    const kind = comment?.event?.kind || "";
+    const meta = EVENT_META[kind];
+
+    if (meta && getEnabledKinds().has(kind)) {
+      return [buildCelebrationEvent(comment, kind, meta)];
+    }
+
+    if (shouldPlayFirstTime(comment)) {
+      const preset = getFirstTimePreset();
+      return [buildCelebrationEvent(comment, "first_time", EVENT_META.first_time, {
+        message: EVENT_META.first_time.message,
+        eventLabel: "初見さん",
+        life: preset.duration,
+        cardScale: preset.cardScale,
+        intensity: preset.intensity,
+        confettiAmount: preset.confettiAmount,
+        sparkleAmount: preset.sparkleAmount,
+        maxQueue: preset.maxQueue
+      })];
+    }
+
+    return [];
   }
 
   return { onComment };
