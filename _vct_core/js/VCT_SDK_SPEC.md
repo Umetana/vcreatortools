@@ -1,4 +1,4 @@
-# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.4-dev
+# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.6-dev
 
 ## 1. 概要
 `vct_one_core.js` は、わんコメの `OneSDK` から送られてくる生データを、テンプレート開発で扱いやすい形式に解析・整形するための共有ライブラリです。
@@ -209,6 +209,7 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 - `normal`
 - `superchat`
 - `supersticker`
+- `jewel`
 - `membership_gift`
 - `membership_gift_received`
 - `member_join`
@@ -228,6 +229,7 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 SDK API のバージョン文字列です。v1.1.0 以降で利用できます。
 
 ## 4. 特殊仕様
+- **YouTubeジュエル**: `giftType === 'jewel'` は、`event.kind === 'jewel'` / `category === 'support'` / `isSupport === true` の支援通知イベントとして分類します。「ジュエル 77 個 を使って GG ハムスター を送りました」形式の本文からギフト名を抽出し、`monetization.gift.label` と `event.displayLabel` に保持します。本文中のジュエル数は金額として扱わず、`paidText` / `amount` / `currency` は補完しません。`amount === 0` のため `buildSupportRecord()` の保存対象にはしません。
 - **YouTube自動翻訳**: YouTube 側が `data.translated` を提供する場合、`parseStructured()` は `translation` に翻訳文を保持します。翻訳文にYouTube絵文字の `<img>` が含まれる場合も `parts` / `imgUrls` に分解します。`message.text` は元コメントのまま維持し、テンプレート側で表示オン/オフを選べるようにします。翻訳はチャンネルオーナー側だけ見える可能性があるため、未提供時は `translation.available === false` になります。Legacy `VCT.parse()` の戻り値には追加しません。
 - **システムメッセージ補完**: メンギフやマイルストーンなど、本文が空でシステム情報だけがある場合、それらを結合して `text` および `parts` にセットします。
 - **本文ソース補完**: `comment` / `text` / `message` / `body` が空文字の場合、`speechText` を本文候補として扱います。メンバーシップギフト受取など、読み上げ文だけに内容が入るケースを補正します。
@@ -255,6 +257,8 @@ OneSDK.subscribe({
 ```
 
 ## 6. 変更履歴
+- **v1.2.6-dev**: YouTubeジュエルの実通知本文からギフト名を抽出し、`monetization.gift.label` / `event.displayLabel` に反映。ジュエル数は金額として扱わない。
+- **v1.2.5-dev**: YouTubeジュエル（`giftType: 'jewel'`）を数量・金額のない支援通知イベントとして `event.kind: 'jewel'` に分類。金額0の場合は従来通り支援履歴を作成しない。
 - **v1.2.4-dev**: Legacy互換 `VCT.parse().text` への `paidText` 末尾補完を廃止。本文と金額を分離し、判定・DB保存では `parseStructured().message` / `monetization` を優先する方針へ整理。
 - **v1.2.3**: `parseStructured()` に `translation` を追加。YouTube `data.translated` を元本文とは分離して保持し、Legacy `VCT.parse()` は変更なし。
 - **v1.2.2**: `parseStructured().user.id` にプラットフォーム側の `userId` を非破壊追加。取得できない場合は空文字列。
