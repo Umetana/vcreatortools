@@ -1,0 +1,87 @@
+<main id="nonogram-app" class="nonogram-app">
+  <section class="game-card">
+    <header class="game-header">
+      <div>
+        <span class="eyebrow">COMMENT RAID</span>
+        <h1>NONOGRAM</h1>
+      </div>
+      <div id="nonogram-phase" class="phase-badge">IDLE</div>
+    </header>
+    <div class="game-body">
+      <div id="nonogram-board-wrap" class="board-wrap"></div>
+      <aside class="status-panel">
+        <div class="question-label">QUESTION</div>
+        <div id="nonogram-title" class="question-title">???</div>
+        <div class="timer-box">
+          <span>残り時間</span><strong id="nonogram-timer">--</strong>
+        </div>
+        <div class="vote-summary">
+          <span>有効投票</span
+          ><strong><span id="nonogram-voters">0</span>人</strong>
+        </div>
+        <h2>投票上位</h2>
+        <ol id="nonogram-ranking" class="ranking">
+          <li>投票待機中</li>
+        </ol>
+        <section class="recent-panel">
+          <h2>RECENT</h2>
+          <ul id="nonogram-recent-list" class="recent-list">
+            <li>まだ結果はありません</li>
+          </ul>
+        </section>
+        <div class="command-help">
+          <b>FILL A3</b> 塗る<br /><b>MARK B5</b> ×を付ける
+        </div>
+      </aside>
+    </div>
+  </section>
+  <div
+    id="nonogram-popup"
+    class="system-popup"
+    role="status"
+    aria-live="polite"
+  ></div>
+  <section class="admin-panel">
+    <div class="admin-title">
+      配信者操作 <button id="nonogram-hide-admin" type="button">非表示</button>
+    </div>
+    <div class="admin-row">
+      <select id="nonogram-puzzle-select" aria-label="問題選択"></select
+      ><button data-action="load">問題開始</button
+      ><button data-action="poll">投票開始</button
+      ><button data-action="stop">投票停止</button
+      ><button data-action="close">即時締切</button>
+    </div>
+    <div class="admin-row">
+      <button data-action="reset">問題リセット</button
+      ><button data-action="next">次の問題</button
+      ><button data-action="random">ランダム</button
+      ><button data-action="undo">1手戻す</button
+      ><label
+        >投票秒<select id="nonogram-poll-duration">
+          <option>10</option>
+          <option selected>15</option>
+          <option>20</option>
+          <option>30</option>
+          <option>60</option>
+        </select></label
+      ><label
+        >結果秒<input
+          id="nonogram-result-duration"
+          type="number"
+          min="0"
+          max="30"
+          value="3" /></label
+      ><label
+        >上位<select id="nonogram-top-count">
+          <option selected>3</option>
+          <option>4</option>
+          <option>5</option>
+        </select></label
+      >
+    </div>
+  </section>
+  <button id="nonogram-show-admin" class="show-admin" type="button" hidden>
+    管理UIを表示
+  </button>
+</main>

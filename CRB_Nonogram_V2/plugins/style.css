@@ -1,0 +1,377 @@
+:root {
+  --ink: #17233b;
+  --cyan: #52d8df;
+  --paper: #f6f0df;
+  --red: #ff5c6a;
+}
+.nonogram-app {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  pointer-events: none;
+}
+.game-card {
+  position: absolute;
+  left: 60px;
+  top: 30px;
+  width: 1800px;
+  height: 900px;
+  box-sizing: border-box;
+  padding: 24px 30px;
+  border: 5px solid #52d8dfcc;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #0a1327f5, #152441f0);
+  box-shadow: 0 20px 70px #0007;
+}
+.game-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.eyebrow {
+  color: var(--cyan);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+}
+.game-header h1 {
+  margin: 1px 0 0;
+  font: 900 52px/1 sans-serif;
+  letter-spacing: 0.08em;
+}
+.phase-badge {
+  min-width: 180px;
+  padding: 14px 24px;
+  border: 3px solid var(--cyan);
+  border-radius: 999px;
+  color: var(--cyan);
+  font: 900 27px/1 monospace;
+  text-align: center;
+}
+.game-body {
+  display: flex;
+  gap: 40px;
+}
+.board-wrap {
+  width: 1160px;
+  height: 782px;
+  display: grid;
+  place-items: center;
+}
+.ng-grid {
+  display: grid;
+  grid-template-columns: 70px 180px repeat(10, 60px);
+  grid-template-rows: 42px 140px repeat(10, 60px);
+  color: var(--ink);
+  filter: drop-shadow(0 10px 20px #0005);
+}
+.ng-col-label,
+.ng-row-label {
+  display: grid;
+  place-items: center;
+  color: #d9fbff;
+  font: 900 23px monospace;
+}
+.ng-col-hint,
+.ng-row-hint {
+  background: var(--paper);
+  font: 900 21px/1.18 monospace;
+  white-space: pre-line;
+}
+.ng-col-hint {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.ng-row-hint {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 14px;
+  word-spacing: 5px;
+}
+.ng-cell {
+  position: relative;
+  box-sizing: border-box;
+  background: #fffdf6;
+  border-right: 2px solid #a5afb5;
+  border-bottom: 2px solid #a5afb5;
+}
+.ng-cell.edge-left {
+  border-left: 4px solid var(--ink);
+}
+.ng-cell.edge-top {
+  border-top: 4px solid var(--ink);
+}
+.ng-cell.major-right {
+  border-right: 4px solid var(--ink);
+}
+.ng-cell.major-bottom {
+  border-bottom: 4px solid var(--ink);
+}
+.ng-cell.filled {
+  background: var(--ink);
+  box-shadow: inset 0 0 0 6px #2d4268;
+}
+.ng-cell.marked:before,
+.ng-cell.marked:after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 27px;
+  width: 42px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--red);
+  transform: rotate(45deg);
+}
+.ng-cell.marked:after {
+  transform: rotate(-45deg);
+}
+.status-panel {
+  width: 520px;
+  padding-top: 10px;
+}
+.question-label {
+  color: var(--cyan);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+.question-title {
+  min-height: 58px;
+  font-size: 43px;
+  font-weight: 900;
+}
+.timer-box,
+.vote-summary {
+  margin-top: 13px;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 13px;
+  background: #ffffff14;
+  font-size: 23px;
+}
+.timer-box strong {
+  color: var(--cyan);
+  font: 900 45px/1 monospace;
+}
+.vote-summary strong {
+  font-size: 31px;
+}
+.status-panel h2 {
+  margin: 22px 0 8px;
+  font-size: 22px;
+  color: #bdeff2;
+}
+.ranking {
+  margin: 0;
+  min-height: 125px;
+  padding: 14px 20px 14px 54px;
+  border-radius: 13px;
+  background: #0003;
+  font: 800 24px/1.55 monospace;
+}
+.result-box {
+  margin-top: 18px;
+  min-height: 40px;
+  padding: 15px;
+  border: 3px solid #ffffff2b;
+  border-radius: 13px;
+  font-size: 25px;
+  font-weight: 900;
+  text-align: center;
+}
+.result-box.is-correct {
+  border-color: #6ee7a8;
+  color: #8cf3bc;
+}
+.result-box.is-wrong {
+  border-color: #ff7a85;
+  color: #ff929b;
+}
+.result-box.is-clear {
+  border-color: #ffe56b;
+  color: #ffe56b;
+  font-size: 31px;
+}
+.command-help {
+  margin-top: 17px;
+  color: #b8c7dd;
+  font: 19px/1.65 monospace;
+}
+.command-help b {
+  color: #fff;
+}
+.admin-panel {
+  position: absolute;
+  left: 90px;
+  right: 90px;
+  bottom: 18px;
+  padding: 12px 18px;
+  border-radius: 15px;
+  background: #050a14f0;
+  pointer-events: auto;
+}
+.admin-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  color: var(--cyan);
+  font-weight: 800;
+}
+.admin-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.admin-panel button,
+.admin-panel select,
+.admin-panel input,
+.show-admin {
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid #55718d;
+  border-radius: 7px;
+  background: #17263d;
+  color: #fff;
+  font-size: 15px;
+}
+.admin-panel label {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 14px;
+}
+.show-admin {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  pointer-events: auto;
+}
+.admin-hidden .game-card {
+  height: 1020px;
+}
+.admin-hidden .game-body {
+  gap: 40px;
+}
+.admin-hidden .board-wrap {
+  width: 1100px;
+  height: 900px;
+}
+.admin-hidden .status-panel {
+  width: 580px;
+}
+.admin-hidden .ng-grid {
+  grid-template-columns: 70px 180px repeat(10, 68px);
+  grid-template-rows: 42px 140px repeat(10, 68px);
+}
+.admin-hidden .ng-col-label,
+.admin-hidden .ng-row-label {
+  font-size: 36px;
+}
+.admin-hidden .ng-col-hint,
+.admin-hidden .ng-row-hint {
+  font-size: 30px;
+}
+.admin-hidden .ng-cell.marked:before,
+.admin-hidden .ng-cell.marked:after {
+  left: 10px;
+  top: 30px;
+  width: 48px;
+  height: 7px;
+}
+.admin-hidden .admin-panel {
+  display: none;
+}
+.recent-panel h2 {
+  margin-top: 20px;
+}
+.recent-list {
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 116px;
+  padding: 12px 18px;
+  list-style: none;
+  border: 2px solid #ffffff1f;
+  border-radius: 13px;
+  background: #07102066;
+  font: 800 21px/1.55 monospace;
+}
+.recent-list li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.recent-correct {
+  color: #8cf3bc;
+}
+.recent-wrong {
+  color: #ff929b;
+}
+.recent-empty {
+  color: #aebbd0;
+}
+.system-popup {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  z-index: 50;
+  min-width: 520px;
+  max-width: 900px;
+  box-sizing: border-box;
+  padding: 22px 34px;
+  border: 4px solid #8ca2bd;
+  border-radius: 18px;
+  background: #071020f2;
+  box-shadow: 0 18px 55px #000b;
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.94);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+.system-popup.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.system-popup.popup-correct {
+  border-color: #6ee7a8;
+  color: #a9f8ca;
+}
+.system-popup.popup-wrong {
+  border-color: #ff6d79;
+  color: #ffacb3;
+}
+.system-popup.popup-empty {
+  border-color: #94a3b8;
+  color: #d5deea;
+}
+.system-popup.popup-clear {
+  border-color: #ffe56b;
+  color: #ffe56b;
+  font-size: 42px;
+  box-shadow:
+    0 0 55px #ffe56b44,
+    0 18px 55px #000b;
+}
+.admin-hidden .recent-list {
+  font-size: 23px;
+  min-height: 124px;
+}
+.admin-hidden .command-help {
+  margin-top: 20px;
+}
