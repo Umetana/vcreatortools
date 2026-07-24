@@ -39,6 +39,15 @@
 
   let loading = false;
 
+  const shouldAutoOpenSettings = () => {
+    try {
+      const value = new URLSearchParams(window.location.search).get('settings');
+      return ['1', 'true', 'open'].includes(String(value || '').toLowerCase());
+    } catch (error) {
+      return false;
+    }
+  };
+
   const loadStyle = (href) => new Promise((resolve, reject) => {
     if (document.querySelector(`link[data-vct-settings="${href}"]`)) {
       resolve();
@@ -89,4 +98,10 @@
       launcher.disabled = false;
     }
   });
+
+  if (shouldAutoOpenSettings()) {
+    window.setTimeout(() => {
+      launcher.click();
+    }, 0);
+  }
 })();

@@ -388,11 +388,13 @@
                             <span class="help">${field.help}</span>
                         `;
                     } else if (field.type === 'color') {
-                        const hexVal = (val && val.startsWith('#')) ? val : '#ffffff';
+                        const rawVal = val ?? '';
+                        const normalizedVal = normalizeHexColor(rawVal);
+                        const hexVal = /^#[0-9a-f]{6}$/i.test(normalizedVal) ? normalizedVal : '#ffffff';
                         html += `
                             <div class="field-row">
                                 <input type="color" id="${key}_picker" value="${hexVal}" oninput="document.getElementById('${key}').value = this.value; updateVal('${key}', this.value)">
-                                <input type="text" id="${key}" value="${val}" oninput="updateVal('${key}', this.value)" style="width: 100px; font-family: monospace;">
+                                <input type="text" id="${key}" value="${rawVal}" oninput="syncColorInput('${key}', this.value)" onblur="this.value = normalizeHexColor(this.value); updateVal('${key}', this.value)" style="width: 100px; font-family: monospace;">
                             </div>
                             <span class="help">${field.help}</span>
                         `;
@@ -433,6 +435,22 @@
                     currentConfig[key] = baseConfig[key] !== undefined ? baseConfig[key] : getDefaultValue(field);
                 }
             }
+        }
+
+        function normalizeHexColor(value) {
+            const text = String(value || '').trim();
+            if (/^#[0-9a-f]{6}$/i.test(text)) return text;
+            if (/^[0-9a-f]{6}$/i.test(text)) return `#${text}`;
+            return text;
+        }
+
+        function syncColorInput(key, value) {
+            const normalized = normalizeHexColor(value);
+            const picker = document.getElementById(`${key}_picker`);
+            if (picker && /^#[0-9a-f]{6}$/i.test(normalized)) {
+                picker.value = normalized;
+            }
+            updateVal(key, normalized);
         }
 
         function updateVal(key, val) {

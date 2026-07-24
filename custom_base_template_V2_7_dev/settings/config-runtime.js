@@ -6,9 +6,12 @@
     .replace(/[^a-z0-9._-]+/gi, '_')
     .toLowerCase();
   const STORAGE_KEY = `vct.template-settings.${templateId}.v1`;
+  const CHANNEL_NAME = `vct.template-settings.${templateId}.channel`;
+  const instanceId = (window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
   const defaults = { ...(window.CONFIG_DEFAULT || {}) };
   const fileConfig = { ...(window.CONFIG || {}) };
   const baseline = { ...defaults, ...fileConfig };
+  let channel = null;
 
   const readLocal = () => {
     try {
@@ -59,9 +62,50 @@
     }
   };
 
+  const openChannel = () => {
+    if (channel || typeof window.BroadcastChannel !== 'function') return channel;
+    try {
+      channel = new window.BroadcastChannel(CHANNEL_NAME);
+      channel.onmessage = (event) => {
+        const data = event.data || {};
+        if (data.senderId === instanceId) return;
+        if (data.type === 'settings-saved' || data.type === 'settings-cleared') {
+          window.location.reload();
+        }
+      };
+    } catch (error) {
+      console.warn('[VCT Settings] BroadcastChannel unavailable.', error);
+      channel = null;
+    }
+    return channel;
+  };
+
+  const broadcastReload = (type = 'settings-saved') => {
+    const activeChannel = openChannel();
+    if (!activeChannel) return false;
+    try {
+      activeChannel.postMessage({
+        type,
+        templateId,
+        storageKey: STORAGE_KEY,
+        senderId: instanceId,
+        sentAt: Date.now()
+      });
+      return true;
+    } catch (error) {
+      console.warn('[VCT Settings] BroadcastChannel post failed.', error);
+      return false;
+    }
+  };
+
+  openChannel();
+
   window.CONFIG = effective;
   window.VCT_CONFIG_RUNTIME = Object.freeze({
+    templateId,
     storageKey: STORAGE_KEY,
+    channelName: CHANNEL_NAME,
+    instanceId,
     defaults,
     fileConfig,
     baseline,
@@ -70,6 +114,7 @@
     source: Object.keys(localOverrides).length ? 'localStorage' : (Object.keys(fileConfig).length ? 'config.js' : 'config_default.js'),
     makeDiff,
     writeLocal,
-    clearLocal
+    clearLocal,
+    broadcastReload
   });
 })();

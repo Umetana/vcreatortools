@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - UI Framework: Vue.js 3 (Composition API)
-- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
+- SDK: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.6-dev
 - Styling: Vanilla CSS + CSS Variables
 
 ## 2. フォルダ構成
@@ -21,7 +21,7 @@
 - `settings/settings-schema.js`: 画面内設定パネルの項目定義。
 - `settings/settings-panel.js`: 設定パネルDOM、ファイル読込、localStorage保存を担当。
 - `settings/settings-panel.css`: 設定パネル専用スタイル。ギアクリック時に読み込む。
-- `lib/vct_one_core.js`: VCT SDK v1.2.3。
+- `lib/vct_one_core.js`: VCT SDK v1.2.6-dev。
 - `lib/VCT_SDK_SPEC.md`: 同梱SDKの仕様メモ。
 
 ## 3. データ処理
@@ -71,9 +71,19 @@ vct.template-settings.<template-folder>.v1
 
 フォーク後にフォルダ名を変更すると別の保存領域になるため、他テンプレートの設定と衝突しません。
 
+BroadcastChannel APIが利用できる環境では、同じテンプレートを開いている別画面へ設定更新通知を送ります。チャンネル名もテンプレートフォルダ名から生成します。
+
+```text
+vct.template-settings.<template-folder>.channel
+```
+
+設定パネルでlocalStorageへ保存した場合は `settings-saved`、localStorage設定を削除した場合は `settings-cleared` を送信します。受信側は送信元IDが自分自身ではない場合に `window.location.reload()` を実行します。BroadcastChannelが利用できない環境では通知だけ無効になり、設定保存と自画面の再読み込みは従来通り動作します。
+
 ## 5. 画面内設定パネル
 
 `settings-launcher.js` だけは起動時に読み込みます。ギアをクリックするまでは `settings-schema.js`、`settings-panel.js`、`settings-panel.css` を読み込みません。
+
+URLクエリに `settings=1`、`settings=true`、`settings=open` のいずれかを指定した場合は、起動時にギアクリックと同じ処理を自動実行し、設定パネルを開きます。これはローカルサーバー運用時に、OBSの表示用ブラウザソースとは別にカスタムブラウザドックへ設定用URLを登録する用途を想定しています。
 
 設定の確定反映は、localStorageへ保存後にページを再読み込みして行います。
 

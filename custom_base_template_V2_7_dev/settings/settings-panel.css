@@ -12,7 +12,7 @@
   color: #ffffff;
   font: 24px/1 sans-serif;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.35;
   transform: translateY(5px);
   transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
 }
@@ -158,8 +158,15 @@
 }
 
 .vct-settings-field input[type="color"] {
+  flex: 0 0 42px;
+  width: 42px;
   height: 34px;
   padding: 2px;
+}
+
+.vct-settings-color-text {
+  flex: 1 1 auto;
+  font-family: monospace;
 }
 
 .vct-settings-field output {

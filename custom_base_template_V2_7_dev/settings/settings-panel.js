@@ -35,6 +35,13 @@
     sourceText.textContent = labels[runtime.source] || runtime.source;
   };
 
+  const normalizeHexColor = (value) => {
+    const text = String(value || '').trim();
+    if (/^#[0-9a-f]{6}$/i.test(text)) return text;
+    if (/^[0-9a-f]{6}$/i.test(text)) return `#${text}`;
+    return text;
+  };
+
   const makeInput = (key, field) => {
     const wrap = document.createElement('label');
     wrap.className = 'vct-settings-field';
@@ -50,6 +57,34 @@
     if (field.type === 'checkbox') {
       input.type = 'checkbox';
       input.checked = !!draft[key];
+    } else if (field.type === 'color') {
+      const value = draft[key] ?? '';
+      const picker = document.createElement('input');
+      const text = document.createElement('input');
+      const colorValue = normalizeHexColor(value);
+      picker.type = 'color';
+      picker.value = /^#[0-9a-f]{6}$/i.test(colorValue) ? colorValue : '#ffffff';
+      picker.className = 'vct-settings-color-picker';
+      text.type = 'text';
+      text.value = value;
+      text.dataset.configKey = key;
+      text.className = 'vct-settings-color-text';
+      picker.addEventListener('input', () => {
+        text.value = picker.value;
+        text.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      text.addEventListener('input', () => {
+        const normalized = normalizeHexColor(text.value);
+        if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+          picker.value = normalized;
+        }
+      });
+      text.addEventListener('blur', () => {
+        text.value = normalizeHexColor(text.value);
+      });
+      row.append(picker, text);
+      wrap.appendChild(row);
+      return wrap;
     } else if (field.type === 'range') {
       input.type = 'range';
       input.min = field.min;
@@ -106,6 +141,7 @@
       const key = input.dataset.configKey;
       if (input.type === 'checkbox') next[key] = input.checked;
       else if (input.type === 'number' || input.type === 'range') next[key] = Number(input.value);
+      else if (input.classList.contains('vct-settings-color-text')) next[key] = normalizeHexColor(input.value);
       else next[key] = input.value;
     });
     return next;
@@ -222,11 +258,13 @@
     footer.append(
       createButton('ローカル設定を削除', 'is-danger', () => {
         runtime.clearLocal();
+        runtime.broadcastReload?.('settings-cleared');
         window.location.reload();
       }),
       createButton('保存して再読み込み', 'is-primary', () => {
         try {
           runtime.writeLocal(collect());
+          runtime.broadcastReload?.('settings-saved');
           window.location.reload();
         } catch (error) {
           setStatus('ローカル設定を保存できませんでした。', true);
