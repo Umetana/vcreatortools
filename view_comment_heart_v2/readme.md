@@ -3,7 +3,7 @@
 わんコメ用の「Glassmorphism（グラスモーフィズム）」と「ハート演出（Heart Embrace）」を特徴としたカスタムテンプレートです。
 背景のぼかしと、コメントに重なるようにふわふわと浮かぶハートで、可愛らしくも高級感のある画面演出を提供します。
 
-V2 は VCT SDK v1.2.3 の `parseStructured()` / `event` レイヤーへ移行した新方式版です。
+V2 は VCT SDK v1.2.6-dev の `parseStructured()` / `event` レイヤーへ移行した新方式版です。
 スパチャ、Super Sticker、メンバーシップ、メンギフ送信/受取をSDK側の分類に基づいて表示します。
 
 ## 主な機能

@@ -5,7 +5,7 @@
 ## 1. システム構成
 
 - **UI Framework**: Vue.js 3 (Composition API)
-- **SDK**: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.3
+- **SDK**: OneSDK / VCT SDK (`vct_one_core.js`) v1.2.6-dev
 - **Styling**: Vanilla CSS (CSS Variables)
 
 ## 2. フォルダ構成

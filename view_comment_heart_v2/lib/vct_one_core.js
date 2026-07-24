@@ -1,11 +1,11 @@
 /**
- * V-Creator Tools: OneComme Core SDK (VCT) v1.2.3
+ * V-Creator Tools: OneComme Core SDK (VCT) v1.2.6-dev
  * 
  * 共通のコメント解析ロジックを提供し、各テンプレートのコードを簡略化します。
  */
 
 window.VCT = (function () {
-    const VERSION = '1.2.3';
+    const VERSION = '1.2.6-dev';
     const DEFAULT_COLOR = { r: 255, g: 255, b: 255 };
 
     /**
@@ -162,13 +162,23 @@ window.VCT = (function () {
         }
     }
 
+    function extractJewelGiftName(text) {
+        const source = String(text || '').trim();
+        const match = source.match(/^\s*ジュエル\s*[\d,]+\s*個\s*を使って\s*(.+?)\s*を送りました\s*$/u);
+        return match ? match[1].trim() : '';
+    }
+
     function resolveSupportGift(support) {
         const { raw, data } = getCommentPayload(support);
         const imageInfo = extractFirstImageInfo(data?.comment || data?.message || '');
         const type = String(support?.giftType || support?.rawType || data?.giftType || raw?.type || '').trim();
+        const jewelGiftName = type.toLowerCase() === 'jewel'
+            ? extractJewelGiftName(parseHtml(data?.comment || data?.message || '').text)
+            : '';
         const label = String(
             support?.giftLabel ||
             support?.attachmentLabel ||
+            jewelGiftName ||
             data?.speechText ||
             imageInfo.alt ||
             ''
@@ -289,6 +299,18 @@ window.VCT = (function () {
                 category: 'support',
                 isSupport: true,
                 displayLabel: amountText || 'ステッカー'
+            };
+        }
+
+        if (giftType === 'jewel') {
+            const giftName = extractJewelGiftName(userText);
+            return {
+                ...base,
+                kind: 'jewel',
+                category: 'support',
+                isSupport: true,
+                displayLabel: giftName || 'ジュエル',
+                shouldShowMessage: true
             };
         }
 
@@ -509,11 +531,7 @@ window.VCT = (function () {
             }
         }
 
-        // Legacy互換用の本文は従来通り paidText を末尾へ補完する
-        let legacyComment = baseComment;
-        if (data?.hasGift && data.paidText && !legacyComment.includes(data.paidText)) {
-            legacyComment += ` ${data.paidText}`;
-        }
+        const legacyComment = baseComment;
 
         const baseContent = parseHtml(baseComment);
         const parsedContent = parseHtml(legacyComment);
