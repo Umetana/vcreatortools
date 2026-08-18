@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ms.Bridge V2 (OneComme Template)</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body hidden>
+  <div id="container" class="container">
+    <div class="panel" :style="panelStyle">
+      <div class="hdr">
+        <div class="title">Ms.Bridge V2 v0.6.0-dev</div>
+        <div class="status">
+          <span class="pill" :data-running="bridge.isRunning">
+            <span v-if="bridge.isRunning">接続中</span>
+            <span v-else>停止</span>
+          </span>
+          <span class="pill" :data-running="bridge.enabled">
+            <span v-if="bridge.enabled">送信ON</span>
+            <span v-else>送信OFF</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="row">
+          <button class="btn" @click="start" :disabled="bridge.isRunning">Start</button>
+          <button class="btn" @click="stop" :disabled="!bridge.isRunning">Stop</button>
+          <button class="btn" @click="reset">Reset</button>
+          <label class="chk">
+            <input type="checkbox" v-model="bridge.enabled" />
+            Bridge送信
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="fld">
+            送信先URL（localhostのみ）
+            <input class="inp" type="text" v-model.trim="bridge.endpoint" placeholder="http://127.0.0.1:3000/bridge" />
+          </label>
+        </div>
+
+        <div class="row" style="border-top:1px solid rgba(0,0,0,0.08); padding-top:10px;">
+          <label class="chk">
+            <input type="checkbox" v-model="bridge.sendComment" />
+            commentイベントを送信
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="fld" v-if="bridge.sendComment">
+            comment送信形式
+            <select class="sel" v-model="bridge.commentFormat">
+              <option value="normalized">normalized（通常運用）</option>
+              <option value="both">raw + normalized（デバッグ）</option>
+              <option value="raw">raw（原本調査）</option>
+            </select>
+          </label>
+          <label class="chk">
+            <input type="checkbox" v-model="bridge.sendMeta" />
+            メタデータ(meta)も送信（同接/高評価など）
+          </label>
+
+          <label class="fld" v-if="bridge.sendMeta">
+            metaクールダウン(ms)
+            <input class="inp num" type="number" min="0" step="50" v-model.number="bridge.metaCooldownMs" />
+          </label>
+        </div>
+
+        <div class="row note">
+          <div>送信は <b>POST JSON</b>。comment/metaを順次キュー送信します。</div>
+          <div>送信失敗時は最大3回試行します。送信先は <b>localhostのみ</b> です。</div>
+          <div v-if="bridge.sendComment && bridge.commentFormat !== 'normalized'">rawは <b>デバッグ/再解釈用の正本</b> を想定しています。</div>
+          <div v-if="bridge.sendComment && bridge.commentFormat !== 'raw'">normalizedは <b>VCT_SDK.normalize()</b> で生成します。</div>
+        </div>
+
+        <div class="row">
+          <div class="mini">
+            受信: {{stats.seen}} / 送信: {{stats.sent}} / 待機: {{sendQueue.length}} / 失敗: {{stats.fail}} / 破棄: {{stats.dropped}}
+          </div>
+          <div class="mini" :class="{bad: !endpointIsLocalhost}">
+            endpoint検証: <b>{{ endpointIsLocalhost ? "OK" : "NG（localhost以外）" }}</b>
+          </div>
+        </div>
+
+        <div class="log">
+          <div class="loghdr">ログ（最新が上）</div>
+          <div v-if="logs.length === 0" class="empty">まだイベントがありません</div>
+          <div v-for="(l, i) in logs" :key="i" class="logline" :class="{err: l.level==='err'}">
+            <span class="ts">{{l.ts}}</span>
+            <span class="msg">{{l.msg}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OneComme template required -->
+  <script src="../__origin/js/vue.min.js"></script>
+  <script src="../__origin/js/onesdk.js"></script>
+  <script src="../_vct_core/js/vct_sdk.js?v=2.0.0-dev"></script>
+
+  <script src="./script.js"></script>
+</body>
+
+</html>
