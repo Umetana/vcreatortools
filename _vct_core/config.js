@@ -4,5 +4,5 @@ window.VCT_CORE_CONFIG = {
   debug: false,
   saveUsers: true,
   saveSupports: true,
-  oneSdkMode: "diff"
+  oneSdkMode: "all"
 };

@@ -261,8 +261,8 @@
 
   function normalizeUserProfile(data) {
     const updatedAt = normalizeTimestamp(data.updatedAt) ?? Date.now();
-    const lastSeenAt = normalizeTimestamp(data.lastSeenAt) ?? updatedAt;
     const lastEventAt = normalizeTimestamp(data.eventAt);
+    const lastSeenAt = normalizeTimestamp(data.lastSeenAt) ?? lastEventAt ?? updatedAt;
     const firstSeenAt = normalizeTimestamp(data.firstSeenAt) ?? lastSeenAt;
     const incomingStreamId = normalizeString(data.streamId);
     const lastSeenStreamId = normalizeString(data.lastSeenStreamId || incomingStreamId);
@@ -309,14 +309,27 @@
       ? normalizeRecentStreamIds(existing.recentStreamIds, incomingStreamId)
       : normalizeRecentStreamIds(existing.recentStreamIds);
 
+    const existingEventAt = normalizeTimestamp(existing.lastEventAt);
+    const incomingEventAt = normalizeTimestamp(incoming.lastEventAt);
+    const shouldApplyIncoming = existingEventAt == null || incomingEventAt == null || incomingEventAt > existingEventAt;
+    const existingFirstSeenAt = normalizeTimestamp(existing.firstSeenAt);
+    const incomingFirstSeenAt = normalizeTimestamp(incoming.firstSeenAt);
     const merged = {
-      ...existing,
-      ...incoming,
-      firstSeenAt: existing.firstSeenAt ?? incoming.firstSeenAt,
-      lastSeenAt: incoming.lastSeenAt ?? existing.lastSeenAt,
+      ...(shouldApplyIncoming ? { ...existing, ...incoming } : { ...incoming, ...existing }),
+      firstSeenAt: Math.min(
+        existingFirstSeenAt ?? Number.MAX_SAFE_INTEGER,
+        incomingFirstSeenAt ?? Number.MAX_SAFE_INTEGER
+      ) === Number.MAX_SAFE_INTEGER ? null : Math.min(
+        existingFirstSeenAt ?? Number.MAX_SAFE_INTEGER,
+        incomingFirstSeenAt ?? Number.MAX_SAFE_INTEGER
+      ),
+      lastSeenAt: Math.max(
+        normalizeTimestamp(existing.lastSeenAt) ?? 0,
+        normalizeTimestamp(incoming.lastSeenAt) ?? 0
+      ) || null,
       lastSeenStreamId: incomingStreamId || existing.lastSeenStreamId || '',
       recentStreamIds,
-      updatedAt: incoming.updatedAt ?? Date.now(),
+      updatedAt: shouldApplyIncoming ? (incoming.updatedAt ?? Date.now()) : existing.updatedAt,
       lastEventAt: Math.max(
         normalizeTimestamp(existing.lastEventAt) ?? 0,
         normalizeTimestamp(incoming.lastEventAt) ?? 0

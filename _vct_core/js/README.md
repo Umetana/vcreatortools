@@ -4,9 +4,10 @@
 
 ## 含まれるもの
 
-### `vct_one_core.js`
+### `vct_sdk.js`
 
-OneComme / OneSDK から受け取るコメントデータを、テンプレート側で扱いやすい形式へ解析・整形する共通ライブラリです。
+SDK 2.0 の正本です。`window.VCT_SDK.normalize()` を単一の正規化入口として提供します。
+SDK 1系とは公開名を分けているため、移行期間中は同じページでも共存できます。
 
 主な役割:
 
@@ -14,11 +15,22 @@ OneComme / OneSDK から受け取るコメントデータを、テンプレー�
 - 絵文字 / 画像パーツの分離
 - 色情報の解釈
 - システムメッセージや支援系情報の補完
-- `users` / `supports` 保存用レコードの生成
 
 詳細仕様:
 
-- [VCT_SDK_SPEC.md](./VCT_SDK_SPEC.md)
+- [VCT_SDK_SPEC_2.md](./VCT_SDK_SPEC_2.md)
+
+### `vct_one_core.js`
+
+SDK 1系の既存テンプレート向け凍結版です。VCT Core runtimeからは読み込みません。
+
+### `vct_core_records.js`
+
+SDK 2.0の正規化結果から、VCT Coreが使用する `users` / `supports` 保存用レコードを生成します。
+
+詳細仕様:
+
+- [../VCT_CORE_SPEC.md](../VCT_CORE_SPEC.md)
 
 ### `vct_logger.js`
 

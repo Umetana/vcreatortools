@@ -88,7 +88,7 @@
     }
 
     setText(els.dbVersion, String(dbInfo.version || 'unknown'));
-    setText(els.mode, config.oneSdkMode || 'diff');
+    setText(els.mode, config.oneSdkMode || 'all');
     setText(els.saveUsers, config.saveUsers ? 'on' : 'off', config.saveUsers ? 'ok' : 'warn');
     setText(els.saveSupports, config.saveSupports ? 'on' : 'off', config.saveSupports ? 'ok' : 'warn');
     setText(els.debug, config.debug ? 'on' : 'off');

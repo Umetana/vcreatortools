@@ -1,10 +1,12 @@
-# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.7-dev
+# V-Creator Tools: OneComme Core SDK (VCT) Technical Spec v1.2.5-dev
 
 ## 1. 概要
+
 `vct_one_core.js` は、わんコメの `OneSDK` から送られてくる生データを、テンプレート開発で扱いやすい形式に解析・整形するための共有ライブラリです。
 `DOMParser` による絵文字の分離、色の優先順位判定、システムメッセージの補完などを自動で行います。
 
 ## 2. 導入方法
+
 テンプレートの `index.html` の `onesdk.js`（および `config.js`）の後、メインスクリプト（`main.js` 等）の前に読み込みます。
 
 ```html
@@ -18,9 +20,11 @@
 ## 3. API リファレンス
 
 ### `window.VCT.parse(rawComment)`
+
 OneSDKの `comments` アクション等で受け取った生のコメントオブジェクトを解析します。
 
 **引数:**
+
 - `rawComment` (Object): OneSDKから渡されるコメント1件分のデータ。
 
 **戻り値:**
@@ -49,7 +53,9 @@ OneSDKの `comments` アクション等で受け取った生のコメントオ�
 | `raw` | Object | 解析前の生データ |
 
 ### `CommentObject.parts` の構造
+
 リスト表示などで「テキストと絵文字を正しい並び順で出したい」場合に使用します。
+
 ```js
 [
   { type: 'text', content: 'こんにちは！' },
@@ -59,6 +65,7 @@ OneSDKの `comments` アクション等で受け取った生のコメントオ�
 ```
 
 ### `CommentObject.vctCommand` の構造
+
 先頭コマンドを使うテンプレート向けの補助オブジェクトです。既存の `text` や `parts` は書き換えません。
 `vctCommand` は、金額表示などを混ぜないベース本文から抽出されます。
 
@@ -77,68 +84,84 @@ OneSDKの `comments` アクション等で受け取った生のコメントオ�
 - 区切り空白は半角スペースだけでなく、全角スペースやタブも許容
 
 ### `window.VCT.extractSupportAmount(commentData)`
+
 解析済みの `CommentObject` から支援金額を抽出します。
 
 **引数:**
+
 - `commentData` (Object): `VCT.parse()` の戻り値。
 
 **戻り値:**
+
 - `Number`: 抽出できた支援金額。取得できない場合は `0`。
 
 参照候補は `price`, `paidAmount`, `amount`, `money`, `paidText` などです。数値文字列に含まれるカンマは除去して扱います。
 
 ### `window.VCT.extractSupportCurrency(commentData)`
+
 解析済みの `CommentObject` から通貨情報を抽出します。
 
 **戻り値:**
+
 - `String`: `currency` または `money.currency` 由来の通貨文字列。取得できない場合は空文字列。
 
 ### `window.VCT.getDisplayMessage(commentData)`
+
 支援金額表示用の `paidText` が本文末尾に付いている場合、それを除いた表示用メッセージを返します。
 ステッカー等の内容名は本文には混ぜず、`resolveSupportGift()` で別フィールドとして扱います。
 
 **戻り値:**
+
 - `String`: 支援履歴に保存するメッセージ本文。
 
 ### `window.VCT.resolveSupportGift(support)`
+
 支援イベントまたは解析済みコメントから、ステッカー等のギフト情報を抽出します。
 
 **戻り値:**
+
 - `Object`: `type`, `label`, `imageUrl`, `hasImage` を含むギフト情報。
 
 ### `window.VCT.buildUserProfileRecord(commentData, options)`
+
 `VCT_IDB.saveUserProfile()` に渡すためのユーザープロフィールレコードを生成します。
 VCT Core 内部では `parseCore()` の戻り値を渡します。
 
 **引数:**
+
 - `commentData` (Object): `VCT.parseCore()` または `VCT.parse()` の戻り値。
 - `options` (Object, optional): 環境依存値の注入用。
 
 **`options` 候補:**
+
 - `now` (Function): 現在時刻を返す関数。未指定時は `Date.now()`。
 
 **戻り値:**
 `platform`, `userId`, `userName`, `displayName`, `screenName`, `userIcon`, `originalUserIcon`, `isMember`, `isModerator`, `isOwner`, `eventAt`, `updatedAt`, `rawProfile` を含むオブジェクト。
 
 ### `window.VCT.buildSupportRecord(commentData, options)`
+
 `VCT_IDB.saveSupport()` に渡すための支援レコードを生成します。
 VCT Core 内部では `parseCore().event.isSupport === true` のイベントだけを保存対象にします。
 
 **引数:**
+
 - `commentData` (Object): `VCT.parseCore()` または `VCT.parse()` の戻り値。
 - `options` (Object): `streamId` や `buildUserKey` などの環境依存値。
 
 **`options` 候補:**
+
 - `streamId` (String): 保存対象の配信ID。
 - `buildUserKey` (Function): `userKey` を生成する関数。通常は `VCT_IDB.buildUserKey` を runtime 側から注入します。
 - `now` (Function): 現在時刻を返す関数。
 
 **戻り値:**
-`event.isSupport === true` かつ支援金額が取得できた場合は `platform`, `streamId`, `originalEventId`, `eventAt`, `userKey`, `userId`, `userName`, `amount`, `currency`, `message`, `giftType`, `giftLabel`, `giftImageUrl`, `supportColor`, `rawType`, `raw` を含むオブジェクト。対象外イベント、支援金額が `0` 以下、または `event.kind === 'jewel'` の場合は `null`。ジュエル数は法定通貨の金額と区別し、`supports` へは保存しません。
+`event.isSupport === true` かつ支援金額が取得できた場合は `platform`, `streamId`, `originalEventId`, `eventAt`, `userKey`, `userId`, `userName`, `amount`, `currency`, `message`, `giftType`, `giftLabel`, `giftImageUrl`, `supportColor`, `rawType`, `raw` を含むオブジェクト。対象外イベントまたは支援金額が `0` 以下の場合は `null`。
 
 `VCT` は `VCT_IDB` を直接参照しません。`streamId` や `buildUserKey` は呼び出し側が注入します。
 
 ### `window.VCT.parseStructured(rawComment)`
+
 OneSDK の生コメントを、表示用途以外でも扱いやすい構造化オブジェクトへ変換します。
 Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCommand` と `message.command`、`giftType / giftLabel / giftImageUrl` と `monetization.gift` は意味対応します。
 
@@ -202,10 +225,12 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 ```
 
 ### `structured.event`
+
 `parseStructured()` が返す表示・演出判定用のイベント分類です。
 テンプレート側は `giftType` / `hasGift` / `membership` を個別に組み合わせず、まずこの値を参照します。
 
 主な `kind`:
+
 - `normal`
 - `superchat`
 - `supersticker`
@@ -218,6 +243,7 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 - `unknown`
 
 主なフィールド:
+
 - `category`: `comment` / `support` / `membership` / `system` / `unknown`
 - `isSupport`: スパチャ、Super Sticker などの支援イベント
 - `isMembership`: メンバーシップ、メンギフ、加入、マイルストーン系イベント
@@ -226,10 +252,12 @@ Legacy 互換の `VCT.parse()` と同じ内部正規化を通るため、`vctCom
 - `shouldShowMessage`: 本文欄に `message.parts` を表示するかどうか
 
 ### `window.VCT.VERSION`
+
 SDK API のバージョン文字列です。v1.1.0 以降で利用できます。
 
 ## 4. 特殊仕様
-- **YouTubeジュエル**: `giftType === 'jewel'` は、`event.kind === 'jewel'` / `category === 'support'` / `isSupport === true` の支援通知イベントとして分類します。「ジュエル 77 個 を使って GG ハムスター を送りました」形式の本文からギフト名を抽出し、`monetization.gift.label` と `event.displayLabel` に保持します。わんコメが `paidText` / `price` を提供する場合は `monetization.paidText` / `amount` に反映しますが、その値はジュエル数であり法定通貨の金額ではありません。そのため `buildSupportRecord()` では金額の有無にかかわらず保存対象外とします。
+
+- **YouTubeジュエル**: `giftType === 'jewel'` は、`event.kind === 'jewel'` / `category === 'support'` / `isSupport === true` の支援通知イベントとして分類します。数量・金額が提供されないデータでは `amount === 0` のままとし、`buildSupportRecord()` の保存対象にはしません。
 - **YouTube自動翻訳**: YouTube 側が `data.translated` を提供する場合、`parseStructured()` は `translation` に翻訳文を保持します。翻訳文にYouTube絵文字の `<img>` が含まれる場合も `parts` / `imgUrls` に分解します。`message.text` は元コメントのまま維持し、テンプレート側で表示オン/オフを選べるようにします。翻訳はチャンネルオーナー側だけ見える可能性があるため、未提供時は `translation.available === false` になります。Legacy `VCT.parse()` の戻り値には追加しません。
 - **システムメッセージ補完**: メンギフやマイルストーンなど、本文が空でシステム情報だけがある場合、それらを結合して `text` および `parts` にセットします。
 - **本文ソース補完**: `comment` / `text` / `message` / `body` が空文字の場合、`speechText` を本文候補として扱います。メンバーシップギフト受取など、読み上げ文だけに内容が入るケースを補正します。
@@ -241,6 +269,7 @@ SDK API のバージョン文字列です。v1.1.0 以降で利用できます�
   の順に優先されます。
 
 ## 5. 実装例
+
 ```javascript
 OneSDK.subscribe({
   action: 'comments',
@@ -257,8 +286,7 @@ OneSDK.subscribe({
 ```
 
 ## 6. 変更履歴
-- **v1.2.7-dev**: わんコメのジュエルテストデータに `price` / `paidText` が追加されたことに対応。`event.kind === 'jewel'` は金額を取得できても `buildSupportRecord()` では `null` を返し、通貨建ての支援履歴への混入を防止。
-- **v1.2.6-dev**: YouTubeジュエルの実通知本文からギフト名を抽出し、`monetization.gift.label` / `event.displayLabel` に反映。ジュエル数は金額として扱わない。
+
 - **v1.2.5-dev**: YouTubeジュエル（`giftType: 'jewel'`）を数量・金額のない支援通知イベントとして `event.kind: 'jewel'` に分類。金額0の場合は従来通り支援履歴を作成しない。
 - **v1.2.4-dev**: Legacy互換 `VCT.parse().text` への `paidText` 末尾補完を廃止。本文と金額を分離し、判定・DB保存では `parseStructured().message` / `monetization` を優先する方針へ整理。
 - **v1.2.3**: `parseStructured()` に `translation` を追加。YouTube `data.translated` を元本文とは分離して保持し、Legacy `VCT.parse()` は変更なし。

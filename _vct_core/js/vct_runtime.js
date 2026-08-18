@@ -9,10 +9,11 @@
     debug: false,
     saveUsers: true,
     saveSupports: true,
-    oneSdkMode: 'diff'
+    oneSdkMode: 'all'
   };
 
   const MIGRATION_MARKER_KEY = 'vct_idb_migration.v1.commentraid_to_vct_common_data';
+  const PROCESSED_COMMENT_LIMIT = 500;
 
   const state = {
     config: { ...DEFAULT_CONFIG },
@@ -31,7 +32,9 @@
       supportsTotal: null,
       lastRefreshedAt: null
     },
-    subscribers: new Map()
+    subscribers: new Map(),
+    processedCommentKeys: new Set(),
+    commentQueue: Promise.resolve()
   };
 
   function getLogger() {
@@ -242,16 +245,15 @@
 
   async function handleIncomingComment(rawComment) {
     state.lastCommentAt = Date.now();
-    emitStatus();
 
-    const commentData = global.VCT ? global.VCT.parseCore(rawComment) : null;
+    const commentData = global.VCT_SDK?.normalize(rawComment, { includeRaw: true }) || null;
     if (!commentData) {
-      logWarn('comment parse returned empty');
+      logWarn('comment normalize returned empty');
       return;
     }
 
     if (state.config.saveUsers) {
-      const userRecord = global.VCT.buildUserProfileRecord(commentData, {
+      const userRecord = global.VCT_CORE_RECORDS.buildUserProfile(commentData, {
         streamId: getStreamId(),
         now: () => Date.now()
       });
@@ -261,29 +263,94 @@
     }
 
     if (!state.config.saveSupports) {
-      emitStatus();
-      await refreshDbStats({ silent: true });
-      return;
+      return { userSaved: !!state.config.saveUsers, supportSaved: false };
     }
 
-    const supportRecord = global.VCT.buildSupportRecord(commentData, {
+    const supportRecord = global.VCT_CORE_RECORDS.buildSupport(commentData, {
       streamId: getStreamId(),
       buildUserKey: global.VCT_IDB.buildUserKey,
       now: () => Date.now()
     });
 
     if (!supportRecord) {
-      emitStatus();
-      await refreshDbStats({ silent: true });
-      return;
+      return { userSaved: !!state.config.saveUsers, supportSaved: false };
     }
 
     await global.VCT_IDB.saveSupport(supportRecord);
     state.supportsSaved += 1;
     state.lastSupportSavedAt = Date.now();
     logInfo(`support saved: ${supportRecord.userName} / ${supportRecord.amount}`);
-    emitStatus();
-    await refreshDbStats({ silent: true });
+    return { userSaved: !!state.config.saveUsers, supportSaved: true };
+  }
+
+  function getCommentKey(rawComment) {
+    const data = rawComment?.data
+      || rawComment?.payload?.raw?.data
+      || rawComment?.payload?.data
+      || rawComment?.raw?.data
+      || rawComment?.payload
+      || rawComment
+      || {};
+    const platform = rawComment?.service?.id || rawComment?.service || data?.service || '';
+    const id = data?.id || rawComment?.id || '';
+
+    if (id) {
+      return `${platform}:${id}`;
+    }
+
+    const timestamp = data?.timestamp || rawComment?.ts || '';
+    const userId = data?.userId || '';
+    const message = data?.comment || data?.message || '';
+    if (!timestamp || (!userId && !message)) {
+      return '';
+    }
+
+    return `${platform}:${timestamp}:${userId}:${String(message)}`;
+  }
+
+  function rememberCommentKey(key) {
+    if (!key) return;
+    state.processedCommentKeys.add(key);
+
+    while (state.processedCommentKeys.size > PROCESSED_COMMENT_LIMIT) {
+      const oldestKey = state.processedCommentKeys.values().next().value;
+      state.processedCommentKeys.delete(oldestKey);
+    }
+  }
+
+  async function processCommentBatch(rawComments) {
+    const batchKeys = new Set();
+    let processed = 0;
+
+    for (const rawComment of rawComments) {
+      const key = getCommentKey(rawComment);
+      if (key && (state.processedCommentKeys.has(key) || batchKeys.has(key))) {
+        continue;
+      }
+
+      if (key) batchKeys.add(key);
+
+      try {
+        await handleIncomingComment(rawComment);
+        rememberCommentKey(key);
+        processed += 1;
+      } catch (err) {
+        logError(`comment handling error: ${err?.message || err}`);
+      }
+    }
+
+    if (processed > 0) {
+      await refreshDbStats({ silent: true });
+      emitStatus();
+    }
+  }
+
+  function enqueueCommentBatch(rawComments) {
+    state.commentQueue = state.commentQueue
+      .then(() => processCommentBatch(rawComments))
+      .catch((err) => {
+        logError(`comment batch error: ${err?.message || err}`);
+      });
   }
 
   function setupOneSDK() {
@@ -295,7 +362,7 @@
     }
 
     global.OneSDK.setup({
-      mode: state.config.oneSdkMode || 'diff',
+      mode: state.config.oneSdkMode || 'all',
       permissions: ['comments', 'clear']
     });
 
@@ -303,11 +370,7 @@
       action: 'comments',
       callback: (res) => {
         const list = Array.isArray(res) ? res : [res];
-        list.forEach((rawComment) => {
-          handleIncomingComment(rawComment).catch((err) => {
-            logError(`comment handling error: ${err?.message || err}`);
-          });
-        });
+        enqueueCommentBatch(list);
       }
     });
 
@@ -362,6 +425,20 @@
       state.coreStatus = 'boot error';
       emitStatus();
       throw new Error('VCT_IDB not found');
+    }
+
+    if (!global.VCT_SDK || typeof global.VCT_SDK.normalize !== 'function') {
+      state.dbError = 'VCT_SDK not found';
+      state.coreStatus = 'boot error';
+      emitStatus();
+      throw new Error('VCT_SDK not found');
+    }
+
+    if (!global.VCT_CORE_RECORDS) {
+      state.dbError = 'VCT_CORE_RECORDS not found';
+      state.coreStatus = 'boot error';
+      emitStatus();
+      throw new Error('VCT_CORE_RECORDS not found');
     }
 
     try {
