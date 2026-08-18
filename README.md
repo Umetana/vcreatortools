@@ -14,15 +14,33 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
   * テンプレート間で共有するデータ管理基盤
   * ユーザー情報、支援履歴などの共有データを管理
 
-* `vct_one_core.js`
+* `vct_sdk.js`
 
-  * VCT SDK
+  * VCT SDK V2系
+  * コメントデータの正規化ライブラリ
+  * スパチャ、メンバーシップ、メンギフなどを共通形式で扱うためのSDK
+  * V1系に混在していた新仕様とLegacy仕様を整理しLegacyを削除
+  * V1系固有の不具合や多重処理を修正
+
+* `vct_one_core.js` 最終版 v1.2.7
+
+  * VCT SDK V1系、旧仕様
   * コメントデータの正規化ライブラリ
   * スパチャ、メンバーシップ、メンギフなどを共通形式で扱うためのSDK
 
 ### Development
 
-* `CommentFX_base_V2/`
+## VCT SDK V2系
+
+* `custom_base_template_V2_8_dev/`
+
+  * `custom_base_template_V2_7/`をベースにVCT SDK V2仕様
+
+* `comment_raid_base_V2/`
+
+## VCT SDK V1系
+
+* `CommentFX_base_V2_6/`
 * `custom_base_template_V2/`
 
   * VCT SDK対応のカスタムテンプレート開発ベース
@@ -35,6 +53,14 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
 ### Templates
 
 コメントビューアや配信支援向けの各種テンプレートを収録しています。
+
+## VCT SDK V2仕様
+
+* `VCT_InfoHUD_V2/`
+* `VCT_SB_V2/`
+* `VCT_SB_V2_UI/`
+
+## VCT SDK V1仕様
 
 * `view_comment_flash_v2/`
 * `view_comment_heart_v2/`
