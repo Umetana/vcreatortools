@@ -84,7 +84,7 @@
     onCalculateDamage(ctx, state, cfg) {
       const s = ensureStarterState(state);
       const comment = ctx.commentData || {};
-      const text = String(comment.text || "");
+      const text = String(comment.message?.text || "");
 
       // 例: 文字数に応じてダメージを与える
       ctx.dmg = text.length;

@@ -1,4 +1,4 @@
-# Comment Raid Base v2.0.0 Visual Reference
+# Comment Raid Base v2.1.0-dev Visual Reference
 
 本基盤は 1920x1080 (FHD) の固定キャンバスを前提としています。プラグイン開発時のレイアウト調整にご活用ください。
 

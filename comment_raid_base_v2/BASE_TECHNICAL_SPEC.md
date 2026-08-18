@@ -1,4 +1,4 @@
-# Comment Raid Base v2.0.0 Technical Specification
+# Comment Raid Base v2.1.0-dev Technical Specification
 
 本仕様は `comment_raid_base_v2` の **現行実装（engine.js / script.js）** を基準に記述します。  
 ここにない API や hook は「未サポート」です。
@@ -9,9 +9,15 @@
   - `js/core/engine.js`: プラグイン登録、hook 呼び出し、manifest 解決
   - `js/core/script.js`: OneSDK購読、FX橋渡し、`state.ui.status` 同期
   - `js/core/fx.js`: event の視覚演出
-  - `../_vct_core/js/vct_one_core.js`: OneSDKコメント解析。V2では同梱旧SDKではなく共通VCT SDK v1.2.1+ を参照
+  - `../_vct_core/js/vct_sdk.js`: OneSDKコメント解析。V2では同梱旧SDKではなく共通VCT SDK 2.0 を参照
 - Rule Pack
   - `js/plugins/<pack>/...`: ルール、UI、CSS、追加データ
+
+### 1.1 責務境界
+
+`comment_raid_base_v2` は読まれる側の共通基盤です。個別の `CRB_*` テンプレートを参照・管理せず、個別テンプレート用 DB wrapper や `VCT_IDB` も読み込みません。
+
+個別テンプレートは Base を相対参照し、固有ルール、UI、DB 連携、VCT 共通 DB との接続をテンプレート側で完結させます。Base の公開契約は `ENGINE` / hook / `ctx` / `state` / manifest / FX に限定します。
 
 ## 2. Plugin オブジェクト仕様
 
@@ -93,9 +99,11 @@
 
 - `commentData: object`
   - `script.js` から渡されるコメント情報
-  - 実運用では `text`, `user`, `hasGift`, `isOwner`, `raw` 等が利用される
-  - V2追加: `event`, `structured`, `message`, `monetization`, `membershipInfo`, `service`
-  - `event.kind` は `normal`, `superchat`, `supersticker`, `membership_gift`, `membership_gift_received`, `member_join`, `member_milestone`, `membership_event` 等を取り得る
+  - VCT SDK 2.0 の `VCT_SDK.normalize(raw, { includeRaw: true })` の戻り値
+  - 主なフィールド: `id`, `service`, `message`, `user`, `monetization`, `membership`, `event`, `style`, `system`, `raw`
+  - `event.kind` は `normal`, `superchat`, `supersticker`, `jewel`, `membership_gift`, `membership_gift_received`, `member_join`, `member_milestone`, `membership_event`, `unknown` 等を取り得る
+  - 本文は `message.text`、表示名は `user.displayName`、支援判定は `event.isSupport`、通貨建て金額は `monetization.money` を参照する
+  - `ENGINE.extractGiftPrice(commentData)` は `monetization.money.available === true` の場合だけ `monetization.money.amount` を返す
 - `events: object[]`
   - 演出イベントキュー。`script.js` が `FX.push()` に渡す
 - `dmg: number`
@@ -221,6 +229,7 @@ window.RULE_MANIFEST = {
 - 標準ディレクトリ外の構成を使う場合、manifest で読み込み順・パスを自己管理する
 - 運用例: plugin 側の `index.html` / `config.js` から `../comment_raid_base_v2/js/...` のように Base を相対参照することで、Base 本体を編集せずに plugin ごとの単体管理・運用ができる
 - script 依存順は `scripts` 配列の記述順で保証する
+- 外部 `CRB_*` テンプレートでは、manifest パスはそのテンプレートの `index.html` から解決できる形で書く
 
 ## 10. 互換・制約
 
@@ -229,3 +238,4 @@ window.RULE_MANIFEST = {
 - hook が Promise を返した場合、reject は `Async hook error` として catch される（完了待ちはしない）
 - `styles` / `ui` は読み込み済み重複チェックをしない
 - `OneSDK` 未接続時のコメント処理は `script.js` 依存
+- Base は IndexedDB API を公開しない。DB 永続化は個別テンプレート/plugin の責務

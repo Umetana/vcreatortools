@@ -1,5 +1,5 @@
 /**
- * Comment Raid Base v2 - script.js
+ * Comment Raid Base v2.1.0-dev - script.js
  * わんコメのコメントデータを受信し、演出（fx.js）へ橋渡しするスクリプト
  */
 
@@ -72,25 +72,36 @@ function getEffectiveMaxProcessPerSec() {
 let allowProcess = createPerSecondLimiter(getEffectiveMaxProcessPerSec());
 
 function parseCommentData(rawComment) {
-  if (!window.VCT || typeof VCT.parse !== "function") {
-    return extractCommentDataLegacy(rawComment);
+  if (window.VCT_SDK && typeof VCT_SDK.normalize === "function") {
+    return VCT_SDK.normalize(rawComment, { includeRaw: true });
   }
 
-  const legacy = VCT.parse(rawComment);
-  if (typeof VCT.parseStructured !== "function") {
-    return legacy;
-  }
+  console.warn("[CommentRaidBase] VCT_SDK.normalize is not available.");
+  return null;
+}
 
-  const structured = VCT.parseStructured(rawComment);
-  return {
-    ...legacy,
-    structured,
-    event: structured?.event || null,
-    message: structured?.message || null,
-    monetization: structured?.monetization || null,
-    membershipInfo: structured?.membership || null,
-    service: structured?.service || null
-  };
+function getCommentText(commentData) {
+  return String(commentData?.message?.text || "");
+}
+
+function getCommentUserName(commentData) {
+  return commentData?.user?.displayName || commentData?.user?.name || "Anonymous";
+}
+
+function getCommentParts(commentData) {
+  return Array.isArray(commentData?.message?.parts) ? commentData.message.parts : [];
+}
+
+function getCommentImageUrls(commentData) {
+  return Array.isArray(commentData?.message?.imageUrls) ? commentData.message.imageUrls : [];
+}
+
+function getCommentColorString(commentData) {
+  return commentData?.style?.colorString || "#ffffff";
+}
+
+function isSupportEvent(commentData) {
+  return !!(commentData?.event?.isSupport && !commentData?.membership?.isGiftReceiver);
 }
 
 // ===== 1.6 RaidログUI（DOM） =====
@@ -184,24 +195,27 @@ const RaidLog = (() => {
   requestAnimationFrame(tick);
 
   function getRichContent(commentData, cfg, showEmoji) {
-    if (!showEmoji) return ellipsis(commentData.text, cfg.MAX_LOG_CHARS ?? 32);
+    const text = getCommentText(commentData);
+    if (!showEmoji) return ellipsis(text, cfg.MAX_LOG_CHARS ?? 32);
 
     let html = "";
-    if (commentData.parts && commentData.parts.length > 0) {
-      html = commentData.parts.map(p => {
+    const parts = getCommentParts(commentData);
+    const imageUrls = getCommentImageUrls(commentData);
+    if (parts.length > 0) {
+      html = parts.map(p => {
         if (p.type === 'text') return p.content;
         if (p.type === 'emoji') return `<img src="${p.url}" alt="${p.alt}">`;
         return "";
       }).join("");
-    } else if (commentData.imgUrls && commentData.imgUrls.length > 0) {
-      html = commentData.text + commentData.imgUrls.map(url => `<img src="${url}" alt="">`).join("");
+    } else if (imageUrls.length > 0) {
+      html = text + imageUrls.map(url => `<img src="${url}" alt="">`).join("");
     } else {
-      html = ellipsis(commentData.text, cfg.MAX_LOG_CHARS ?? 32);
+      html = ellipsis(text, cfg.MAX_LOG_CHARS ?? 32);
     }
 
     const plainLength = html.replace(/<[^>]*>/g, '').length;
     if (plainLength > (cfg.MAX_LOG_CHARS ?? 32)) {
-      return ellipsis(commentData.text, cfg.MAX_LOG_CHARS ?? 32);
+      return ellipsis(text, cfg.MAX_LOG_CHARS ?? 32);
     }
     return html;
   }
@@ -209,7 +223,7 @@ const RaidLog = (() => {
   return {
     push(commentData, events) {
       const cfg = getMergedConfig();
-      const name = commentData?.user || "Anonymous";
+      const name = getCommentUserName(commentData);
       const impossible = isImpossibleMode();
       const showEmoji = cfg.LOG_SHOW_EMOJI !== false && !impossible;
       
@@ -223,8 +237,8 @@ const RaidLog = (() => {
         contentHtml = `${name}：${contentHtml}`;
       }
 
-      const useColor = commentData.hasGift ? cfg.LOG_USE_GIFT_COLOR : cfg.LOG_USE_USER_COLOR;
-      pushLine(contentHtml, useColor ? commentData.colorStr : null);
+      const useColor = isSupportEvent(commentData) ? cfg.LOG_USE_GIFT_COLOR : cfg.LOG_USE_USER_COLOR;
+      pushLine(contentHtml, useColor ? getCommentColorString(commentData) : null);
       offsetY = Math.max(offsetY - 24, -99999);
     }
   };
@@ -237,6 +251,7 @@ OneSDK.subscribe({
     if (!comments || comments.length === 0) return;
     for (const c of comments) {
       const commentData = parseCommentData(c);
+      if (!commentData) continue;
       const impossible = isImpossibleMode();
       let events = [];
       const accepted = (!impossible) || allowProcess();
@@ -258,19 +273,6 @@ OneSDK.subscribe({
 });
 
 /**
- * 互換性のためのレガシー抽出（SDK読み込み失敗時用）
- */
-function extractCommentDataLegacy(c) {
-  const data = c?.data || c?.payload?.data || c?.payload || c;
-  return {
-    text: data?.comment || "",
-    user: data?.displayName || data?.name || "",
-    colorStr: "#ffffff",
-    raw: c
-  };
-}
-
-/**
  * HTML表示（デバッグ・簡易プレビュー用）
  */
 function pushToHtml(data) {
@@ -278,8 +280,9 @@ function pushToHtml(data) {
   if (!container) return;
   const div = document.createElement('div');
   div.className = 'comment';
-  div.style.setProperty('--user-color', data.colorStr);
-  div.innerHTML = `${data.user ? `<div class="comment-name">${data.user}</div>` : ''}<div class="comment-text">${data.text}</div>`;
+  const userName = getCommentUserName(data);
+  div.style.setProperty('--user-color', getCommentColorString(data));
+  div.innerHTML = `${userName ? `<div class="comment-name">${userName}</div>` : ''}<div class="comment-text">${getCommentText(data)}</div>`;
   container.prepend(div);
   while (container.children.length > 20) container.removeChild(container.lastChild);
 }

@@ -1,11 +1,17 @@
 # CHANGELOG - Comment Raid Base
 
+## v2.1.0-dev (2026-08-17)
+### Changed
+- `ctx.commentData` を既存互換アダプタ形式から VCT SDK 2.0 正規化結果の直渡しに変更。
+- プラグイン側の参照方針を `message.text` / `user.displayName` / `event` / `monetization.money` に整理。
+- `template.json` に `version` を追加。
+
 ## v2.0.0 (2026-06-12)
 ### Changed
 - V1を残したまま `comment_raid_base_v2` としてフォーク。
-- VCT SDK参照を旧同梱 `./__shared/js/vct_one_core.js` から共通 `../_vct_core/js/vct_one_core.js` (v1.2.1+) へ移行。
-- `script.js` が legacy互換コメントに `event`, `structured`, `message`, `monetization`, `membershipInfo`, `service` を付与するように変更。
-- `ENGINE.extractGiftPrice()` は利用可能な場合 `VCT.extractSupportAmount()` を優先。
+- VCT SDK参照を旧同梱 `./__shared/js/vct_one_core.js` から共通 `../_vct_core/js/vct_sdk.js` (SDK 2.0) へ移行。
+- `script.js` が `VCT_SDK.normalize()` をコメント正規化の入口として使うように変更。
+- `ENGINE.extractGiftPrice()` は `ctx.commentData.monetization.money.amount` を優先し、SDK 2.0正規化済みコメントではジュエル数やメンギフ件数を通貨金額として扱わない。
 
 ## v1.1.1 (2026-03-14)
 ### Fixed

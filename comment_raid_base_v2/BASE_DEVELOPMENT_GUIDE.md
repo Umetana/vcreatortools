@@ -1,9 +1,9 @@
-# Comment Raid Base v2.0.0 Development Guide
+# Comment Raid Base v2.1.0-dev Development Guide
 
 このガイドは、`js/plugins/_starter_kit/` を起点に新規 Rule Pack を作る plugin author 向け手順です。  
 対象は「実装済みの Base API を正しく使う」ことに絞ります。
 
-V2 は `../_vct_core/js/vct_one_core.js` (VCT SDK v1.2.1+) を使います。既存の `ctx.commentData.text` / `user` / `hasGift` は維持され、追加で `ctx.commentData.event` や `ctx.commentData.structured` を参照できます。
+V2 は `../_vct_core/js/vct_sdk.js` (VCT SDK 2.0) を使います。`ctx.commentData` は `VCT_SDK.normalize(raw, { includeRaw: true })` の戻り値です。
 
 ## 1. 開発フロー（推奨）
 
@@ -17,6 +17,19 @@ V2 は `../_vct_core/js/vct_one_core.js` (VCT SDK v1.2.1+) を使います。既
 
 - `js/plugins/sample_counter/` は Raid 非依存の最小完成例です
 - `_starter_kit` は拡張前提の雛形、`sample_counter` は最小実装の見本という使い分けです
+
+### 1.1 外部 `CRB_*` テンプレートとして開発する場合
+
+`CRB_CASINO_V2` のように Base 外へ置くテンプレートでは、Base は相対参照される共通基盤として扱います。Base は個別 `CRB_*` テンプレートを読まず、管理もせず、DB 連携も担当しません。
+
+外部テンプレート側で担当するもの:
+
+- 固有ルールと固有 UI
+- 固有 DB wrapper
+- 必要に応じた `_vct_core` / `VCT_IDB` の読み込み
+- `window.CONFIG.PLUGINS` と manifest パスの管理
+
+この場合、manifest 内の `scripts` / `styles` / `ui` は、外部テンプレートの `index.html` から実際に解決できるパスで書いてください。Base はパスの自動補正をしません。
 
 ## 2. ファイル責務
 
@@ -74,8 +87,13 @@ V2 は `../_vct_core/js/vct_one_core.js` (VCT SDK v1.2.1+) を使います。既
 コメント処理系 hook で使う基本フィールド:
 
 - `ctx.commentData`
-  - 受信コメント（`text`, `user`, `hasGift`, `isOwner`, `raw` など）
-  - V2追加: `event`, `structured`, `message`, `monetization`, `membershipInfo`, `service`
+  - 受信コメントのSDK 2.0正規化結果
+  - 本文は `message.text`
+  - 表示名は `user.displayName`
+  - ロールは `user.roles.owner` / `user.roles.moderator`
+  - 支援・メンバーシップ分類は `event` / `membership`
+  - 通貨建て支援額は `ENGINE.extractGiftPrice(ctx.commentData)` または `ctx.commentData.monetization.money.amount` を使う
+  - ジュエル数は `ctx.commentData.monetization.jewels.count`、メンギフ件数は `ctx.commentData.membership.giftCount` を使い、通貨金額と混ぜない
 - `ctx.events`
   - FX へ渡す event 配列。プラグインが `push` する
 - `ctx.dmg`
@@ -101,7 +119,8 @@ V2 は `../_vct_core/js/vct_one_core.js` (VCT SDK v1.2.1+) を使います。既
   - `script.js` が `ENGINE.onComment()` の戻り値を `FX.push()` に橋渡しする
 - state 管理
   - ゲーム状態は `state` に集約する
-  - 永続化（`localStorage`）はプラグイン責務で、`afterComment` や節目の hook で保存する
+  - 永続化（`localStorage` / IndexedDB など）はプラグイン責務で、`afterComment` や節目の hook で保存する
+  - Base は `VCT_IDB` や個別 DB wrapper を読み込まない
   - `state` は全プラグイン共有のため、`state.<pluginNamespace>` に集約して衝突を避ける
 
 ### 5.1 推奨 plugin state 構造
@@ -166,8 +185,8 @@ window.RULE_MANIFEST = {
     },
 
     onCalculateDamage(ctx) {
-      if (ctx.commentData?.event?.isGiftReceiver) return;
-      ctx.dmg = Math.max(1, (ctx.commentData?.text || "").length);
+      if (ctx.commentData?.membership?.isGiftReceiver) return;
+      ctx.dmg = Math.max(1, (ctx.commentData?.message?.text || "").length);
       ctx.attack = { name: "WordHit" };
     },
 

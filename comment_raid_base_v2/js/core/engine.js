@@ -1,5 +1,5 @@
 /**
- * CommentRaid Engine V2.0.0 (Base Edition)
+ * CommentRaid Engine V2.1.0-dev (Base Edition)
  * A lightweight dispatcher that manages plugins and shared state.
  */
 window.ENGINE = (function () {
@@ -303,26 +303,9 @@ window.ENGINE = (function () {
   }
 
   function extractGiftPrice(commentData) {
-    if (window.VCT && typeof VCT.extractSupportAmount === "function") {
-      const amount = VCT.extractSupportAmount(commentData);
-      if (amount > 0) return amount;
-    }
-
-    const raw = commentData?.raw || {};
-    const data = raw?.data || raw?.payload?.data || raw?.payload || raw;
-    const candidates = [
-      commentData?.price, data?.price, data?.paidAmount, data?.amount, data?.money,
-      raw?.price, raw?.payload?.price, raw?.payload?.data?.price, raw?.payload?.data?.money
-    ];
-
-    for (const c of candidates) {
-      const n = parsePriceValue(c);
-      if (n > 0) return n;
-    }
-
-    const paidText = data?.paidText || raw?.payload?.data?.paidText || "";
-    const m = String(paidText).match(/-?\d[\d,]*(?:\.\d+)?/);
-    return m ? parsePriceValue(m[0]) : 0;
+    const money = commentData?.monetization?.money || {};
+    if (money.available !== true) return 0;
+    return parsePriceValue(money.amount);
   }
 
   function getState() {

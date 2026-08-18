@@ -1,15 +1,24 @@
-# Comment Raid Base v2.0.0
+# Comment Raid Base v2.1.0-dev
 
-Comment Raid Base v2.0.0 は、わんコメ向けリアルタイム演出を **Core** と **Rule Pack (Plugin)** に分離した開発基盤です。  
+Comment Raid Base v2.1.0-dev は、わんコメ向けリアルタイム演出を **Core** と **Rule Pack (Plugin)** に分離した開発基盤です。  
 本ドキュメントは「現在の実装」に合わせて、plugin author が `ctx / hook / manifest` を理解しやすい形で整理しています。
 
-V2 では同梱旧SDKを廃止し、共通基盤 `../_vct_core/js/vct_one_core.js` (VCT SDK v1.2.1+) を参照します。既存互換の `VCT.parse()` 形式に加えて、`ctx.commentData.event` / `structured` / `monetization` から現行SDKの分類情報を利用できます。
+V2 では同梱旧SDKを廃止し、共通基盤 `../_vct_core/js/vct_sdk.js` (VCT SDK 2.0) を参照します。`VCT_SDK.normalize()` を1コメントにつき1回だけ実行し、その正規化結果をそのまま `ctx.commentData` としてプラグインへ渡します。
 
 ## 1. 目的
 
 - Core を変更せずに、ルールやUIをプラグイン側で差し替える
 - プラグインは hook で処理を差し込み、`state` と `ctx.events` で動作を構成する
 - UI/CSS/追加JS は manifest で宣言して動的ロードする
+- Base は「読まれる側」の共通基盤として扱い、個別の `CRB_*` テンプレートを参照・管理しない
+
+## 1.1 責務境界
+
+`comment_raid_base_v2` は、OneSDK コメント受信、VCT コメント解析 SDK の利用、`ENGINE` / hook / `state` / FX、plugin UI/CSS/script の差し込み機構だけを担当します。
+
+個別の `CRB_*` テンプレートは Base を相対参照し、固有ルール、固有 UI、固有 DB wrapper、VCT 共通 DB との接続をテンプレート側で完結させます。Base は `VCT_IDB` や個別テンプレート用 DB を読み込まず、DB の存在も前提にしません。
+
+外部テンプレートから Base を読む場合も、`window.CONFIG.PLUGINS` や manifest のパスはそのテンプレートの `index.html` から実際に解決できる形で指定してください。
 
 ## 2. 最小構成
 
@@ -56,7 +65,7 @@ window.CONFIG = {
 
 - hook 実行順: `onInit` -> `onUpdate`(毎フレーム) -> コメントごとに `beforeComment` -> `onProcessAttack` -> `onCalculateDamage` -> `afterCalculateDamage` -> `afterComment`
 - コメント処理用 `ctx` 主要フィールド: `commentData`, `events`, `dmg`, `attack`, `terminated`, `isBossAction`, `now`
-- `ctx.commentData` は従来互換の `text`, `user`, `hasGift`, `colorStr`, `raw` を維持し、V2追加情報として `event`, `structured`, `message`, `monetization`, `membershipInfo`, `service` を持ちます
+- `ctx.commentData` は VCT SDK 2.0 の正規化結果です。本文は `message.text`、表示名は `user.displayName`、支援判定は `event`、通貨建て金額は `monetization.money` を参照します
 - `ctx.events` に event を push すると `script.js` 経由で `FX.push()` に渡される
 - `state` は全プラグイン共有。UI同期は `state.ui.status` を利用可能
 
@@ -95,10 +104,14 @@ window.CONFIG = {
 
 ## 8. 更新履歴
 
+- v2.1.0-dev (2026-08-17)
+  - `ctx.commentData` を既存互換アダプタ形式から VCT SDK 2.0 正規化結果の直渡しに変更
+  - プラグイン側の参照方針を `message.text` / `user.displayName` / `event` / `monetization.money` に整理
+  - `template.json` に `version` を追加
 - v2.0.0 (2026-06-12)
-  - Base V1をフォークし、VCT SDK参照を `../_vct_core/js/vct_one_core.js` に移行
-  - `ctx.commentData.event` / `structured` / `monetization` を追加し、VCT SDK v1.2.1+ の分類情報をプラグインで利用可能に変更
-  - `ENGINE.extractGiftPrice()` が利用可能な場合は `VCT.extractSupportAmount()` を優先
+  - Base V1をフォークし、VCT SDK参照を `../_vct_core/js/vct_sdk.js` に移行
+  - `VCT_SDK.normalize()` をコメント正規化の入口に変更
+  - `ENGINE.extractGiftPrice()` は `ctx.commentData.monetization.money.amount` を優先し、ジュエル数やメンギフ件数を通貨金額として扱わない
 - v1.1.1 (2026-03-14)
   - ログの切り分けロジックを改善（お名前に「の」が含まれるリスナーの表示崩れを修正）
 - v1.1.0 (2026-03-12)
