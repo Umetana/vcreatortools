@@ -28,6 +28,12 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
   * コメントデータの正規化ライブラリ
   * スパチャ、メンバーシップ、メンギフなどを共通形式で扱うためのSDK
 
+* `Ms.Bridge_V2/`
+
+ * わんコメとVCreatorToos appを連携するためのBridgeテンプレ
+ * OneSDKより購読したコメントなどをVCTSDKで正規化しVCreatorToos のローカルサーバーへ送信します
+ * テンプレ自体は購読と送信のみでコメントなどのわんコメ由来データの保存は行わない。
+
 ### Development
 
 ## VCT SDK V2系
