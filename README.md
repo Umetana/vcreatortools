@@ -48,7 +48,6 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
 * `Ms_Tally_v0_6/`
 * `Welcome_Celebration_V2/`
 
-
 各テンプレートの詳細は、それぞれのフォルダ内の README を参照してください。
 
 ## 利用方法
