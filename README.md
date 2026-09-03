@@ -30,9 +30,9 @@ VCreatorTools（VCT）は、わんコメ向けのカスタムテンプレート�
 
 * `Ms.Bridge_V2/`
 
- * わんコメとVCreatorToos appを連携するためのBridgeテンプレ
- * OneSDKより購読したコメントなどをVCTSDKで正規化しVCreatorToos のローカルサーバーへ送信します
- * テンプレ自体は購読と送信のみでコメントなどのわんコメ由来データの保存は行わない。
+  * わんコメとVCreatorToos appを連携するためのBridgeテンプレ
+  * OneSDKより購読したコメントなどをVCTSDKで正規化しVCreatorToos のローカルサーバーへ送信します
+  * テンプレ自体は購読と送信のみでコメントなどのわんコメ由来データの保存は行わない。
 
 ### Development
 
