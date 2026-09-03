@@ -300,7 +300,8 @@
             style: {
                 title: 'カラー・スタイル詳細',
                 fields: {
-                    BG_GLASS: { type: 'text', label: '背景色', help: 'rgba(0,0,0,0.45) 形式など' },
+                    BG_COLOR: { type: 'color', label: '背景色', help: 'コメント枠の背景色' },
+                    BG_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '背景透明度', help: '0で完全透明、1で不透明' },
                     BG_BLUR: { type: 'text', label: 'ぼかし強度', help: '背景の透過ぼかし (例: 12px)' },
                     BASE_BORDER_COLOR: { type: 'color', label: '通常枠線色', help: '通常コメント枠の線色' },
                     BASE_BORDER_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '通常枠線の濃さ', help: '0で通常コメントの枠線を透明にします' },

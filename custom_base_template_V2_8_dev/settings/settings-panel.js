@@ -12,6 +12,13 @@
   let statusText;
   let colorPicker;
   let colorPickerMount;
+  const panelSideKey = `${runtime.storageKey}.panel-side`;
+  let panelSide = 'right';
+  let panelCollapsed = false;
+
+  try {
+    panelSide = window.localStorage.getItem(panelSideKey) === 'left' ? 'left' : 'right';
+  } catch (_) {}
 
   const setStatus = (message, isError = false) => {
     statusText.textContent = message || '';
@@ -182,6 +189,34 @@
     return button;
   };
 
+  const updatePanelUi = () => {
+    if (!root) return;
+    root.classList.toggle('is-left', panelSide === 'left');
+    root.classList.toggle('is-collapsed', panelCollapsed);
+    const sideButton = root.querySelector('.vct-settings-side-toggle');
+    const collapseButton = root.querySelector('.vct-settings-collapse-toggle');
+    if (sideButton) {
+      sideButton.title = panelSide === 'right' ? '設定パネルを左へ移動' : '設定パネルを右へ移動';
+      sideButton.setAttribute('aria-label', sideButton.title);
+    }
+    if (collapseButton) {
+      collapseButton.textContent = panelCollapsed ? '▣' : '—';
+      collapseButton.title = panelCollapsed ? '設定パネルを展開' : '設定パネルを折りたたんで確認';
+      collapseButton.setAttribute('aria-label', collapseButton.title);
+    }
+  };
+
+  const togglePanelSide = () => {
+    panelSide = panelSide === 'right' ? 'left' : 'right';
+    try { window.localStorage.setItem(panelSideKey, panelSide); } catch (_) {}
+    updatePanelUi();
+  };
+
+  const togglePanelCollapsed = () => {
+    panelCollapsed = !panelCollapsed;
+    updatePanelUi();
+  };
+
   const build = () => {
     root = document.createElement('div');
     root.id = 'vct-settings-root';
@@ -199,6 +234,7 @@
 
     const header = document.createElement('header');
     const headingWrap = document.createElement('div');
+    headingWrap.className = 'vct-settings-heading';
     const heading = document.createElement('h2');
     heading.textContent = '表示設定';
     sourceText = document.createElement('p');
@@ -206,7 +242,12 @@
     headingWrap.append(heading, sourceText);
     const closeButton = createButton('\u00d7', 'vct-settings-close', close);
     closeButton.title = '閉じる';
-    header.append(headingWrap, closeButton);
+    const headerActions = document.createElement('div');
+    headerActions.className = 'vct-settings-header-actions';
+    const sideButton = createButton('⇆', 'vct-settings-side-toggle', togglePanelSide);
+    const collapseButton = createButton('—', 'vct-settings-collapse-toggle', togglePanelCollapsed);
+    headerActions.append(sideButton, collapseButton, closeButton);
+    header.append(headingWrap, headerActions);
 
     controls = document.createElement('div');
     controls.className = 'vct-settings-controls';
@@ -228,6 +269,7 @@
       createButton('初期設定', 'is-secondary', () => loadDraft(runtime.defaults, '初期設定を読み込みました。')),
       createButton('背景・枠を透明', 'is-secondary', () => loadDraft({
         ...collect(),
+        BG_OPACITY: 0,
         BG_GLASS: 'rgba(0, 0, 0, 0)',
         BG_BLUR: '0px',
         BASE_BORDER_OPACITY: 0,
@@ -289,14 +331,17 @@
     document.body.appendChild(root);
     updateSource();
     render();
+    updatePanelUi();
   };
 
   function open() {
     if (!root) build();
     draft = { ...runtime.effective };
+    panelCollapsed = false;
     render();
     setStatus('設定変更は画面へ一時反映されます。保存するまで確定されません。');
     root.hidden = false;
+    updatePanelUi();
     document.documentElement.classList.add('vct-settings-open');
   }
 

@@ -62,6 +62,14 @@
   box-shadow: -12px 0 30px rgba(0, 0, 0, 0.35);
 }
 
+#vct-settings-root.is-left .vct-settings-panel {
+  right: auto;
+  left: 0;
+  border-right: 1px solid #334155;
+  border-left: 0;
+  box-shadow: 12px 0 30px rgba(0, 0, 0, 0.35);
+}
+
 .vct-settings-panel header {
   display: flex;
   align-items: flex-start;
@@ -87,7 +95,15 @@
   font-size: 12px;
 }
 
-.vct-settings-close {
+.vct-settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vct-settings-close,
+.vct-settings-side-toggle,
+.vct-settings-collapse-toggle {
   width: 36px;
   height: 36px;
   padding: 0;
@@ -96,6 +112,44 @@
   color: #cbd5e1;
   font-size: 28px;
   cursor: pointer;
+}
+
+.vct-settings-side-toggle,
+.vct-settings-collapse-toggle {
+  font-size: 20px;
+}
+
+#vct-settings-root.is-collapsed {
+  pointer-events: none;
+}
+
+#vct-settings-root.is-collapsed .vct-settings-backdrop {
+  display: none;
+}
+
+#vct-settings-root.is-collapsed .vct-settings-panel {
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+#vct-settings-root.is-collapsed .vct-settings-panel > :not(header),
+#vct-settings-root.is-collapsed .vct-settings-heading {
+  display: none;
+}
+
+#vct-settings-root.is-collapsed .vct-settings-panel header {
+  padding: 6px;
+  border: 1px solid #475569;
+  border-radius: 0 0 0 8px;
+  background: rgba(15, 23, 42, 0.92);
+}
+
+#vct-settings-root.is-left.is-collapsed .vct-settings-panel header {
+  border-radius: 0 0 8px 0;
 }
 
 .vct-settings-tools,

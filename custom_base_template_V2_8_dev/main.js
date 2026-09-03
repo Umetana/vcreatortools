@@ -8,6 +8,21 @@ createApp({
     const C = reactive({ ...(window.CONFIG || {}) });
     const appliedConfig = { ...(window.CONFIG || {}) };
 
+    const resolveBackgroundColor = () => {
+      const runtime = window.VCT_CONFIG_RUNTIME || {};
+      const hasOwn = (source, key) => Object.prototype.hasOwnProperty.call(source || {}, key);
+      const usesLegacySetting =
+        (hasOwn(runtime.localOverrides, 'BG_GLASS') && !hasOwn(runtime.localOverrides, 'BG_COLOR')) ||
+        (hasOwn(runtime.fileConfig, 'BG_GLASS') && !hasOwn(runtime.fileConfig, 'BG_COLOR'));
+      if (usesLegacySetting) return C.BG_GLASS || 'rgba(0, 0, 0, 0.45)';
+
+      const color = String(C.BG_COLOR || '').trim();
+      const match = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+      if (!match) return C.BG_GLASS || 'rgba(0, 0, 0, 0.45)';
+      const opacity = Math.min(1, Math.max(0, Number(C.BG_OPACITY ?? 0.45)));
+      return `rgba(${parseInt(match[1], 16)}, ${parseInt(match[2], 16)}, ${parseInt(match[3], 16)}, ${opacity})`;
+    };
+
     const updateStyle = () => {
       const root = document.documentElement;
       root.style.setProperty('--max-width', C.MAX_WIDTH || '900px');
@@ -23,7 +38,7 @@ createApp({
       root.style.setProperty('--member-bg-opacity', (C.MEMBER_BG_OPACITY !== undefined ? C.MEMBER_BG_OPACITY : 0.9));
       root.style.setProperty('--member-border-opacity', (C.MEMBER_BORDER_OPACITY !== undefined ? C.MEMBER_BORDER_OPACITY : 1.0));
 
-      root.style.setProperty('--bg-glass', C.BG_GLASS || 'rgba(0, 0, 0, 0.45)');
+      root.style.setProperty('--bg-glass', resolveBackgroundColor());
       root.style.setProperty('--bg-blur', C.BG_BLUR || '12px');
       root.style.setProperty('--base-border-color', C.BASE_BORDER_COLOR || '#ffffff');
       root.style.setProperty('--base-border-opacity', (C.BASE_BORDER_OPACITY !== undefined ? C.BASE_BORDER_OPACITY : 0.15));

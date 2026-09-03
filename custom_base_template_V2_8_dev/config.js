@@ -41,7 +41,9 @@ window.CONFIG = {
   MEMBER_BORDER_OPACITY: 1.0, // メンバー系の枠線透明度 (0.0～1.0)
 
   // カラー・スタイル詳細設定
-  BG_GLASS: "rgba(0, 0, 0, 0.45)", // コメント枠の背景色
+  BG_COLOR: "#000000",             // コメント枠の背景色
+  BG_OPACITY: 0.45,                 // コメント枠の背景透明度 (0.0～1.0)
+  BG_GLASS: "rgba(0, 0, 0, 0.45)", // 旧設定との互換用
   BG_BLUR: "12px",                // 背景のぼかし強度
   BASE_BORDER_COLOR: "#ffffff",   // 通常コメント枠線の色
   BASE_BORDER_OPACITY: 0.15,       // 通常コメント枠線の濃さ (0.0～1.0)

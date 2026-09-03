@@ -57,7 +57,8 @@
     appearance: {
       title: 'カラー・スタイル',
       fields: {
-        BG_GLASS: { type: 'text', label: '背景色' },
+        BG_COLOR: { type: 'color', label: '背景色' },
+        BG_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '背景透明度' },
         BG_BLUR: { type: 'text', label: 'ぼかし' },
         BASE_BORDER_COLOR: { type: 'color', label: '通常枠線色' },
         BASE_BORDER_OPACITY: { type: 'range', min: 0, max: 1, step: 0.05, label: '通常枠線の濃さ' },
