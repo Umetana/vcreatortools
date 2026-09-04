@@ -21,6 +21,7 @@ window.CONFIG = {
   ITEM_GAP_PX: 4,            // コメント間の隙間
 
   // 要素の表示切り替え
+  ICON_MODE: "profile",       // "profile" / "halloween" / "hidden"
   SHOW_ICON: true,            // アイコンを表示するか
   SHOW_NAME: true,            // 名前を表示するか
   SHOW_BADGES: true,          // バッジを表示するか

@@ -7,6 +7,7 @@ createApp({
     const comments = ref([]);
     const C = reactive({ ...(window.CONFIG || {}) });
     const appliedConfig = { ...(window.CONFIG || {}) };
+    const halloweenIcons = Object.freeze(['🎃', '👻', '🦇', '💀', '🍬', '🕯️', '🕸️', '🧪']);
 
     const resolveBackgroundColor = () => {
       const runtime = window.VCT_CONFIG_RUNTIME || {};
@@ -86,6 +87,24 @@ createApp({
 
     const visualModeClass = computed(() => `mode-${String(C.VISUAL_MODE || 'emoji').toLowerCase()}`);
     const giftColorModeClass = computed(() => `gift-colors-${String(C.GIFT_COLOR_MODE || 'hybrid').toLowerCase()}`);
+
+    const activeIconMode = () => {
+      const runtime = window.VCT_CONFIG_RUNTIME || {};
+      const local = runtime.localOverrides || {};
+      const legacyHidden = Object.prototype.hasOwnProperty.call(local, 'SHOW_ICON') &&
+        !Object.prototype.hasOwnProperty.call(local, 'ICON_MODE') && local.SHOW_ICON === false;
+      if (legacyHidden) return 'hidden';
+      const mode = String(C.ICON_MODE || (C.SHOW_ICON === false ? 'hidden' : 'profile')).toLowerCase();
+      return ['profile', 'halloween', 'hidden'].includes(mode) ? mode : 'profile';
+    };
+
+    const showCommentIcon = (comment) => {
+      const mode = activeIconMode();
+      if (mode === 'hidden') return false;
+      return mode === 'halloween' || !!comment?.profileImage;
+    };
+
+    const pickHalloweenIcon = () => halloweenIcons[Math.floor(Math.random() * halloweenIcons.length)];
 
     const extractMembershipMonths = (parsed) => {
       const membership = parsed?.membership || {};
@@ -270,6 +289,7 @@ createApp({
 
         return {
           ...refreshed,
+          halloweenIcon: current.halloweenIcon || refreshed.halloweenIcon,
           giftColor: refreshed.isSpecial ? refreshed.colorStr : null,
           timestamp: current.timestamp
         };
@@ -310,6 +330,7 @@ createApp({
         isMembership,
         isSticky: !!parsed.system?.sticky,
         eventKind: String(event.kind || 'comment').replace(/[^a-z0-9_-]/gi, ''),
+        halloweenIcon: pickHalloweenIcon(),
         isSpecial,
         colorStr: parsed.style?.colorString,
         metaLabels: buildMetaLabels(parsed),
@@ -394,7 +415,9 @@ createApp({
       config: C,
       stackClass,
       visualModeClass,
-      giftColorModeClass
+      giftColorModeClass,
+      activeIconMode,
+      showCommentIcon
     };
   }
 }).mount('#app');

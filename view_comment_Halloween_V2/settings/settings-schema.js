@@ -31,7 +31,7 @@
     visibility: {
       title: '表示要素',
       fields: {
-        SHOW_ICON: { type: 'checkbox', label: 'アイコン' },
+        ICON_MODE: { type: 'select', options: ['profile', 'halloween', 'hidden'], label: 'アイコン表示' },
         SHOW_NAME: { type: 'checkbox', label: '名前' },
         SHOW_BADGES: { type: 'checkbox', label: 'バッジ' },
         SHOW_USER_FLAGS: { type: 'checkbox', label: 'OWNER / MOD' },

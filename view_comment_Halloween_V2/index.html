@@ -30,8 +30,9 @@
           :style="cmt.giftColor ? { '--gift-color': cmt.giftColor } : {}">
 
           <!-- アイコン -->
-          <div v-if="config.SHOW_ICON && cmt.profileImage" class="cmt__icon">
-            <img :src="cmt.profileImage" alt="">
+          <div v-if="showCommentIcon(cmt)" class="cmt__icon" :class="{ 'cmt__icon--halloween': activeIconMode() === 'halloween' }">
+            <span v-if="activeIconMode() === 'halloween'" class="cmt__halloween-icon" aria-hidden="true">{{ cmt.halloweenIcon }}</span>
+            <img v-else :src="cmt.profileImage" alt="">
           </div>
 
           <div class="cmt__content">
